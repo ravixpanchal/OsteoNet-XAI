@@ -1,0 +1,13 @@
+streamlit
+torch
+torchvision
+torchaudio
+torchcam
+numpy
+pandas
+matplotlib
+seaborn
+scikit-learn
+pillow
+fpdf2
+reportlab
