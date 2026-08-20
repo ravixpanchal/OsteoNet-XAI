@@ -3,18 +3,19 @@ import json
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
 from tqdm import tqdm
+from sklearn.metrics import precision_recall_fscore_support
 
 from src.config import (
     EPOCHS,
-    LEARNING_RATE,
     RESNET50_PATH
 )
 
 from src.dataset import (
     train_loader,
-    val_loader
+    val_loader,
+    class_weights_tensor,
+    FocalLoss
 )
 
 from src.models import (
@@ -28,18 +29,17 @@ device = get_device()
 model = get_resnet50_model()
 model = model.to(device)
 
-criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
+criterion = FocalLoss(alpha=class_weights_tensor.to(device), gamma=1.5, label_smoothing=0.05)
+
+# Freeze backbone initially (Phase 1)
+for name, param in model.named_parameters():
+    if "fc" not in name:
+        param.requires_grad = False
 
 optimizer = optim.AdamW(
-    model.parameters(),
-    lr=LEARNING_RATE,
+    filter(lambda p: p.requires_grad, model.parameters()),
+    lr=5e-4,
     weight_decay=1e-2
-)
-
-scheduler = optim.lr_scheduler.CosineAnnealingLR(
-    optimizer,
-    T_max=EPOCHS,
-    eta_min=1e-6
 )
 
 train_losses = []
@@ -47,10 +47,30 @@ train_accuracies = []
 val_losses = []
 val_accuracies = []
 
+best_val_f1 = 0.0
 best_val_accuracy = 0.0
+WARMUP_EPOCHS = 5
 
 for epoch in range(EPOCHS):
     print(f"\nEpoch [{epoch+1}/{EPOCHS}]")
+    if epoch == WARMUP_EPOCHS:
+        print("\n🔥 Unfreezing backbone for Phase 2 fine-tuning with differential learning rates...")
+        for param in model.parameters():
+            param.requires_grad = True
+
+        backbone_params = [p for n, p in model.named_parameters() if "fc" not in n]
+        head_params = [p for n, p in model.named_parameters() if "fc" in n]
+
+        optimizer = optim.AdamW([
+            {'params': backbone_params, 'lr': 2e-5},
+            {'params': head_params, 'lr': 2e-4}
+        ], weight_decay=1e-2)
+
+        scheduler = optim.lr_scheduler.CosineAnnealingLR(
+            optimizer,
+            T_max=EPOCHS - WARMUP_EPOCHS,
+            eta_min=1e-6
+        )
 
     model.train()
     running_loss = 0.0
@@ -75,7 +95,8 @@ for epoch in range(EPOCHS):
 
         progress_bar.set_postfix(loss=loss.item())
 
-    scheduler.step()
+    if epoch >= WARMUP_EPOCHS:
+        scheduler.step()
 
     train_loss = running_loss / len(train_loader)
     train_accuracy = 100.0 * correct / total
@@ -87,6 +108,8 @@ for epoch in range(EPOCHS):
     running_val_loss = 0.0
     val_correct = 0
     val_total = 0
+    val_preds = []
+    val_targets = []
 
     with torch.no_grad():
         for images, labels in val_loader:
@@ -100,21 +123,27 @@ for epoch in range(EPOCHS):
             val_total += labels.size(0)
             val_correct += predicted.eq(labels).sum().item()
 
+            val_preds.extend(predicted.cpu().numpy())
+            val_targets.extend(labels.cpu().numpy())
+
     val_loss = running_val_loss / len(val_loader)
     val_accuracy = 100.0 * val_correct / val_total
     val_losses.append(val_loss)
     val_accuracies.append(val_accuracy)
 
-    print(f"Train Loss: {train_loss:.4f} | Train Acc: {train_accuracy:.2f}%")
-    print(f"Val Loss:   {val_loss:.4f} | Val Acc:   {val_accuracy:.2f}%")
+    _, _, val_f1, _ = precision_recall_fscore_support(val_targets, val_preds, average='weighted', zero_division=0)
 
-    if val_accuracy > best_val_accuracy:
+    print(f"Train Loss: {train_loss:.4f} | Train Acc: {train_accuracy:.2f}%")
+    print(f"Val Loss:   {val_loss:.4f} | Val Acc:   {val_accuracy:.2f}% | Val F1: {val_f1:.4f}")
+
+    if val_f1 > best_val_f1 or (val_f1 == best_val_f1 and val_accuracy > best_val_accuracy):
+        best_val_f1 = val_f1
         best_val_accuracy = val_accuracy
         os.makedirs("models", exist_ok=True)
         torch.save(model.state_dict(), RESNET50_PATH)
-        print("✅ Best ResNet50 model saved!")
+        print(f"✅ Best ResNet50 model saved! (Val F1: {val_f1:.4f}, Val Acc: {val_accuracy:.2f}%)")
 
-print(f"\nResNet50 Training Finished! Best Validation Accuracy: {best_val_accuracy:.2f}%")
+print(f"\nResNet50 Training Finished! Best Validation F1: {best_val_f1:.4f}")
 
 history = {
     "train_losses": train_losses,

@@ -81,10 +81,11 @@ Evaluation metrics computed across the validation set (stored in [model_comparis
 
 | Model Architecture | Accuracy | F1-Score (Weighted) | Sensitivity (Recall) | Model File |
 | :--- | :--- | :--- | :--- | :--- |
-| **EfficientNet-B0 ⭐ (Best Model)** | **69.57%** | **0.669** | **69.57%** | [efficientnet_b0.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/efficientnet_b0.pth) |
-| **ResNet18** | **65.22%** | **0.651** | **65.22%** | [resnet18.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/resnet18.pth) |
-| **ResNet50** | **62.32%** | **0.576** | **62.32%** | [resnet50.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/resnet50.pth) |
-| **DenseNet121** | 59.42% | 0.564 | 59.42% | [densenet121.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/densenet121.pth) |
+| **Ensemble Model ⭐ (Best Overall)** | **60.87%** | **0.629** | **60.87%** | Multi-Model Consensus |
+| **ResNet18** | **59.42%** | **0.611** | **59.42%** | [resnet18.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/resnet18.pth) |
+| **EfficientNet-B0** | **55.07%** | **0.566** | **55.07%** | [efficientnet_b0.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/efficientnet_b0.pth) |
+| **ResNet50** | **50.72%** | **0.533** | **50.72%** | [resnet50.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/resnet50.pth) |
+| **DenseNet121** | 49.28% | 0.519 | 49.28% | [densenet121.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/densenet121.pth) |
 
 ---
 

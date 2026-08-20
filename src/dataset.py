@@ -28,6 +28,41 @@ np.random.seed(RANDOM_SEED)
 torch.manual_seed(RANDOM_SEED)
 
 
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+# =====================================
+# FOCAL LOSS FOR CLASS IMBALANCE & RECALL
+# =====================================
+
+class FocalLoss(nn.Module):
+    def __init__(self, alpha=None, gamma=1.5, label_smoothing=0.08, reduction='mean'):
+        super(FocalLoss, self).__init__()
+        self.alpha = alpha
+        self.gamma = gamma
+        self.label_smoothing = label_smoothing
+        self.reduction = reduction
+
+    def forward(self, inputs, targets):
+        ce_loss = F.cross_entropy(inputs, targets, reduction='none', label_smoothing=self.label_smoothing)
+        pt = torch.exp(-ce_loss)
+        focal_loss = ((1.0 - pt) ** self.gamma) * ce_loss
+
+        if self.alpha is not None:
+            if self.alpha.device != inputs.device:
+                self.alpha = self.alpha.to(inputs.device)
+            at = self.alpha[targets]
+            focal_loss = at * focal_loss
+
+        if self.reduction == 'mean':
+            return focal_loss.mean()
+        elif self.reduction == 'sum':
+            return focal_loss.sum()
+        else:
+            return focal_loss
+
+
 # =====================================
 # DATA AUGMENTATION (TRAIN ONLY)
 # =====================================
@@ -36,11 +71,19 @@ train_transform = transforms.Compose([
 
     transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
 
-    transforms.RandomHorizontalFlip(),
+    transforms.RandomHorizontalFlip(p=0.5),
 
-    transforms.RandomRotation(10),
+    transforms.RandomRotation(12),
 
-    transforms.ColorJitter(brightness=0.15, contrast=0.15),
+    transforms.RandomAffine(degrees=0, translate=(0.05, 0.05), scale=(0.95, 1.05)),
+
+    transforms.ColorJitter(brightness=0.2, contrast=0.2),
+
+    transforms.RandomAutocontrast(p=0.4),
+
+    transforms.RandomEqualize(p=0.3),
+
+    transforms.RandomAdjustSharpness(sharpness_factor=1.5, p=0.4),
 
     transforms.ToTensor(),
 
@@ -164,6 +207,11 @@ class_weights = {
     cls: total_train_samples / (num_classes * count)
     for cls, count in train_class_counts.items()
 }
+
+class_weights_tensor = torch.tensor(
+    [class_weights[i] for i in range(num_classes)],
+    dtype=torch.float32
+)
 
 # Map each training sample to its corresponding class weight
 sample_weights = [class_weights[t] for t in train_targets]

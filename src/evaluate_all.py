@@ -210,10 +210,14 @@ def evaluate_model(model, device, test_loader, model_name):
     
     with torch.no_grad():
         for images, labels in test_loader:
-            images = images.to(device)
-            outputs = model(images)
-            probabilities = torch.softmax(outputs, dim=1)
-            _, predicted = torch.max(outputs, 1)
+            images_orig = images.to(device)
+            images_flip = torch.flip(images_orig, dims=[3])
+            
+            out_orig = torch.softmax(model(images_orig), dim=1)
+            out_flip = torch.softmax(model(images_flip), dim=1)
+            
+            probabilities = (out_orig + out_flip) / 2.0
+            _, predicted = torch.max(probabilities, 1)
             
             y_true.extend(labels.numpy())
             y_pred.extend(predicted.cpu().numpy())
@@ -226,21 +230,35 @@ def evaluate_model(model, device, test_loader, model_name):
     return generate_plots_and_metrics(y_true, y_pred, y_scores, model_name)
 
 
-def evaluate_ensemble(models, device, test_loader, model_name="Ensemble"):
+def evaluate_ensemble(loaded_models_dict, device, test_loader, model_name="Ensemble Model"):
+    names = list(loaded_models_dict.keys())
+    models = [loaded_models_dict[k][0] for k in names]
+    f1_scores = np.array([max(loaded_models_dict[k][1]["f1_score"], 0.01) for k in names])
+    
+    weights = np.exp(f1_scores * 3.0)
+    weights /= np.sum(weights)
+    
+    print("\nWeighted Ensemble Weights (F1-Proportional):")
+    for n, w in zip(names, weights):
+        print(f" - {n}: {w:.4f}")
+
     y_true = []
     y_scores = []
     
     with torch.no_grad():
         for images, labels in test_loader:
-            images = images.to(device)
-            batch_probs = []
-            for model in models:
-                outputs = model(images)
-                probs = torch.softmax(outputs, dim=1)
-                batch_probs.append(probs.cpu().numpy())
+            images_orig = images.to(device)
+            images_flip = torch.flip(images_orig, dims=[3])
             
-            avg_probs = np.mean(batch_probs, axis=0)
-            y_scores.extend(avg_probs)
+            weighted_batch_probs = np.zeros((images.size(0), len(CLASS_NAMES)))
+            
+            for i, model in enumerate(models):
+                out_orig = torch.softmax(model(images_orig), dim=1).cpu().numpy()
+                out_flip = torch.softmax(model(images_flip), dim=1).cpu().numpy()
+                m_probs = (out_orig + out_flip) / 2.0
+                weighted_batch_probs += weights[i] * m_probs
+            
+            y_scores.extend(weighted_batch_probs)
             y_true.extend(labels.numpy())
             
     y_true = np.array(y_true)
@@ -311,7 +329,7 @@ def plot_learning_curves(history_path, model_name):
 def main():
     device = get_device()
     comparison_data = {}
-    loaded_models = []
+    loaded_models_dict = {}
     
     # 1. ResNet18
     print("\n--- Evaluating ResNet18 ---")
@@ -323,7 +341,7 @@ def main():
         metrics_r18 = evaluate_model(r18, device, test_loader, "ResNet18")
         comparison_data["ResNet18"] = metrics_r18
         plot_learning_curves("outputs/resnet18_history.json", "ResNet18")
-        loaded_models.append(r18)
+        loaded_models_dict["ResNet18"] = (r18, metrics_r18)
     except Exception as e:
         print(f"Error evaluating ResNet18: {e}")
         
@@ -337,7 +355,7 @@ def main():
         metrics_r50 = evaluate_model(r50, device, test_loader, "ResNet50")
         comparison_data["ResNet50"] = metrics_r50
         plot_learning_curves("outputs/resnet50_history.json", "ResNet50")
-        loaded_models.append(r50)
+        loaded_models_dict["ResNet50"] = (r50, metrics_r50)
     except Exception as e:
         print(f"Error evaluating ResNet50: {e}")
         
@@ -351,7 +369,7 @@ def main():
         metrics_eff = evaluate_model(eff, device, test_loader, "EfficientNetB0")
         comparison_data["EfficientNetB0"] = metrics_eff
         plot_learning_curves("outputs/efficientnet_history.json", "EfficientNetB0")
-        loaded_models.append(eff)
+        loaded_models_dict["EfficientNetB0"] = (eff, metrics_eff)
     except Exception as e:
         print(f"Error evaluating EfficientNetB0: {e}")
 
@@ -365,15 +383,15 @@ def main():
         metrics_dense = evaluate_model(dense, device, test_loader, "DenseNet121")
         comparison_data["DenseNet121"] = metrics_dense
         plot_learning_curves("outputs/densenet121_history.json", "DenseNet121")
-        loaded_models.append(dense)
+        loaded_models_dict["DenseNet121"] = (dense, metrics_dense)
     except Exception as e:
         print(f"Error evaluating DenseNet121: {e}")
 
-    # 5. Soft-Voting Ensemble
-    if len(loaded_models) > 1:
-        print("\n--- Evaluating Soft-Voting Ensemble ---")
+    # 5. F1-Weighted Soft-Voting Ensemble
+    if len(loaded_models_dict) > 1:
+        print("\n--- Evaluating F1-Weighted Soft-Voting Ensemble ---")
         try:
-            metrics_ensemble = evaluate_ensemble(loaded_models, device, test_loader, "Ensemble Model")
+            metrics_ensemble = evaluate_ensemble(loaded_models_dict, device, test_loader, "Ensemble Model")
             comparison_data["Ensemble Model"] = metrics_ensemble
         except Exception as e:
             print(f"Error evaluating Ensemble: {e}")

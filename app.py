@@ -787,15 +787,30 @@ if nav_option == "🔍 Jaw X-ray Predictor":
             st.session_state['image'] = image
             st.session_state['uploaded_file_name'] = uploaded_file.name
             
-            # Inference pass across ensemble
+            # Inference pass across weighted ensemble with Test-Time Augmentation (TTA)
             input_tensor = transform(image).unsqueeze(0).to(device)
+            input_flip = torch.flip(input_tensor, dims=[3])
+            
+            # Compute dynamic weights based on comparison metrics F1 score
+            import numpy as np
+            model_weights = {}
+            total_weight = 0.0
+            for name in models.keys():
+                f1 = comparison_metrics.get(name, {}).get("f1_score", 0.6)
+                w = float(np.exp(f1 * 3.0))
+                model_weights[name] = w
+                total_weight += w
+            for name in model_weights:
+                model_weights[name] /= max(total_weight, 1e-6)
+
             predictions = {}
             ensemble_probs = torch.zeros(len(CLASS_NAMES)).to(device)
             
             with torch.no_grad():
                 for name, m in models.items():
-                    m_outputs = m(input_tensor)
-                    m_probs = torch.softmax(m_outputs, dim=1)[0]
+                    m_out_orig = torch.softmax(m(input_tensor), dim=1)[0]
+                    m_out_flip = torch.softmax(m(input_flip), dim=1)[0]
+                    m_probs = (m_out_orig + m_out_flip) / 2.0
                     m_idx = torch.argmax(m_probs).item()
                     predictions[name] = {
                         "probs": m_probs,
@@ -803,9 +818,9 @@ if nav_option == "🔍 Jaw X-ray Predictor":
                         "class_idx": m_idx,
                         "confidence": m_probs[m_idx].item()
                     }
-                    ensemble_probs += m_probs
+                    w = model_weights.get(name, 1.0 / len(models))
+                    ensemble_probs += w * m_probs
             
-            ensemble_probs /= len(models)
             ensemble_idx = torch.argmax(ensemble_probs).item()
             ensemble_class = CLASS_NAMES[ensemble_idx]
             ensemble_confidence = ensemble_probs[ensemble_idx].item()

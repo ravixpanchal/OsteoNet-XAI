@@ -25,7 +25,7 @@ IMAGE_SIZE = 224
 # =====================================
 
 BATCH_SIZE = 16
-EPOCHS = 25
+EPOCHS = 40
 LEARNING_RATE = 0.0001
 
 
