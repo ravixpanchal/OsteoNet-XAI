@@ -184,55 +184,94 @@ st.markdown("""
         animation: pulseGlow 2.5s infinite;
     }
 
-    /* Top Navigation Radio Styling (Styled as modern Menu Bar) */
+    /* Top Navigation Radio Styling (100% Full-Width Touch Action Button Grid) */
     div[data-testid="stRadio"] {
         margin-bottom: 1.8rem;
+        width: 100% !important;
     }
     div[data-testid="stRadio"] > label {
         display: none !important;
     }
+    
+    /* Radiogroup Grid Container */
+    div[data-testid="stRadio"] [role="radiogroup"],
     div[data-testid="stRadio"] > div {
-        flex-direction: row !important;
-        justify-content: center !important;
-        flex-wrap: wrap !important;
-        gap: 10px !important;
-        background-color: #131b2e;
-        padding: 10px 14px;
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.09);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-    }
-    div[data-testid="stRadio"] label {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 12px !important;
+        width: 100% !important;
         background-color: transparent !important;
-        padding: 10px 20px !important;
-        border-radius: 14px !important;
-        border: 1px solid transparent !important;
-        color: #94a3b8 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    
+    /* HIDE DEFAULT RADIO CIRCLE INPUT DOT COMPLETELY ACROSS ALL STREAMLIT DOM VARIATIONS */
+    div[data-testid="stRadio"] [role="radiogroup"] label > div:first-child,
+    div[data-testid="stRadio"] label > div:first-child,
+    div[data-baseweb="radio"] > div:first-child,
+    div[data-testid="stRadio"] input,
+    div[data-baseweb="radio"] input {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        margin: 0 !important;
+    }
+
+    /* Individual Action Button Styling */
+    div[data-testid="stRadio"] label,
+    div[data-baseweb="radio"] {
+        width: 100% !important;
+        background: #131b2e !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        border-radius: 16px !important;
+        padding: 14px 16px !important;
+        color: #cbd5e1 !important;
         font-weight: 600 !important;
-        font-size: 0.93rem !important;
+        font-size: 0.96rem !important;
         cursor: pointer !important;
-        transition: all 0.25s ease-in-out !important;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
         margin: 0 !important;
         text-align: center !important;
-        white-space: nowrap !important;
-        min-height: 44px !important;
-        display: inline-flex !important;
+        min-height: 52px !important;
+        display: flex !important;
         align-items: center !important;
         justify-content: center !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25) !important;
+        user-select: none !important;
     }
-    div[data-testid="stRadio"] label:hover {
-        color: #f8fafc !important;
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        border-color: rgba(255, 255, 255, 0.12) !important;
+
+    /* Hover effect */
+    div[data-testid="stRadio"] label:hover,
+    div[data-baseweb="radio"]:hover {
+        color: #ffffff !important;
+        background: #1e293b !important;
+        border-color: rgba(20, 184, 166, 0.45) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
     }
-    div[data-testid="stRadio"] label[data-checked="true"] {
+
+    /* Selected Active Button */
+    div[data-testid="stRadio"] label[data-checked="true"],
+    div[data-testid="stRadio"] label:has(input:checked) {
         background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%) !important;
         color: #ffffff !important;
-        font-weight: 600 !important;
-        box-shadow: 0 4px 18px rgba(13, 148, 136, 0.5) !important;
+        font-weight: 700 !important;
+        border: 1px solid #2dd4bf !important;
+        box-shadow: 0 6px 22px rgba(13, 148, 136, 0.55), 0 0 12px rgba(45, 212, 191, 0.3) !important;
+        transform: translateY(-2px) !important;
     }
-    div[data-testid="stRadio"] label > div:first-child {
-        display: none !important;
+
+    /* Text Paragraph inside Radio Label */
+    div[data-testid="stRadio"] label div[data-testid="stMarkdownContainer"] p,
+    div[data-testid="stRadio"] label span {
+        font-size: 0.96rem !important;
+        font-weight: 600 !important;
+        color: inherit !important;
+        margin: 0 !important;
+        line-height: 1.25 !important;
     }
     
     /* Modern Glass Cards */
@@ -423,6 +462,12 @@ st.markdown("""
         .header-banner {
             padding: 1.6rem 1.2rem !important;
         }
+        /* 2-Column Grid on Tablets */
+        div[data-testid="stRadio"] [role="radiogroup"],
+        div[data-testid="stRadio"] > div {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+        }
     }
 
     /* Mobile Devices & Small Tablets (max-width: 768px) */
@@ -474,26 +519,6 @@ st.markdown("""
             width: 100% !important;
             object-fit: contain !important;
         }
-        
-        /* Transform Top Navigation into a 2x2 Touch Grid Menu Bar */
-        div[data-testid="stRadio"] > div {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
-            gap: 8px !important;
-            padding: 8px !important;
-            border-radius: 16px !important;
-        }
-        div[data-testid="stRadio"] label {
-            width: 100% !important;
-            text-align: center !important;
-            padding: 10px 6px !important;
-            font-size: 0.83rem !important;
-            justify-content: center !important;
-            border-radius: 12px !important;
-            white-space: normal !important;
-            word-break: break-word !important;
-            min-height: 48px !important;
-        }
         .patient-metadata-grid {
             grid-template-columns: 1fr 1fr !important;
             gap: 0.8rem !important;
@@ -502,10 +527,23 @@ st.markdown("""
         }
     }
 
-    /* Ultra-small Mobile Screens (< 420px) */
-    @media (max-width: 420px) {
+    /* Mobile Phones (max-width: 640px) */
+    @media (max-width: 640px) {
+        /* 100% FULL-WIDTH STACKED TOUCH ACTION BUTTONS ON MOBILE */
+        div[data-testid="stRadio"] [role="radiogroup"],
         div[data-testid="stRadio"] > div {
             grid-template-columns: 1fr !important;
+            gap: 10px !important;
+            width: 100% !important;
+        }
+        div[data-testid="stRadio"] label,
+        div[data-baseweb="radio"] {
+            width: 100% !important;
+            padding: 14px 12px !important;
+            min-height: 52px !important;
+            font-size: 0.95rem !important;
+            border-radius: 14px !important;
+            justify-content: center !important;
         }
         .patient-metadata-grid {
             grid-template-columns: 1fr !important;
