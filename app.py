@@ -155,7 +155,7 @@ st.markdown("""
 
     /* Top Navigation Radio Styling (Styled as modern Menu Bar) */
     div[data-testid="stRadio"] {
-        margin-bottom: 2rem;
+        margin-bottom: 1.8rem;
     }
     div[data-testid="stRadio"] > label {
         display: none !important;
@@ -164,7 +164,7 @@ st.markdown("""
         flex-direction: row !important;
         justify-content: center !important;
         flex-wrap: wrap !important;
-        gap: 12px !important;
+        gap: 10px !important;
         background-color: #131b2e;
         padding: 10px 14px;
         border-radius: 16px;
@@ -173,15 +173,16 @@ st.markdown("""
     }
     div[data-testid="stRadio"] label {
         background-color: transparent !important;
-        padding: 10px 22px !important;
+        padding: 10px 20px !important;
         border-radius: 12px !important;
         border: 1px solid transparent !important;
         color: #94a3b8 !important;
         font-weight: 600 !important;
-        font-size: 0.95rem !important;
+        font-size: 0.93rem !important;
         cursor: pointer !important;
         transition: all 0.25s ease-in-out !important;
         margin: 0 !important;
+        text-align: center !important;
     }
     div[data-testid="stRadio"] label:hover {
         color: #f8fafc !important;
@@ -224,6 +225,11 @@ st.markdown("""
         display: flex;
         align-items: center;
         gap: 8px;
+    }
+    .premium-card img {
+        max-width: 100% !important;
+        height: auto !important;
+        object-fit: contain !important;
     }
 
     /* Feature Banner Card */
@@ -312,6 +318,15 @@ st.markdown("""
         background-color: rgba(15, 118, 110, 0.05);
     }
     
+    /* Patient Metadata Grid */
+    .patient-metadata-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.2rem 1.8rem;
+        color: #f8fafc;
+        font-size: 0.95rem;
+    }
+
     /* Responsive Info Grid */
     .protocol-card {
         background-color: #131b2e;
@@ -377,13 +392,16 @@ st.markdown("""
 
     /* Table Responsive Wrappers */
     .table-container {
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
         margin-top: 10px;
         margin-bottom: 15px;
         border-radius: 12px;
         border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+    .table-container table {
+        min-width: 480px;
     }
 
     /* Streamlit Download Button Customization */
@@ -393,11 +411,12 @@ st.markdown("""
         font-weight: 600 !important;
         font-size: 1rem !important;
         border: none !important;
-        padding: 0.75rem 1.5rem !important;
+        padding: 0.85rem 1.5rem !important;
         border-radius: 12px !important;
         box-shadow: 0 4px 15px rgba(15, 118, 110, 0.35) !important;
         transition: all 0.25s ease-in-out !important;
         width: 100% !important;
+        min-height: 48px !important;
     }
     .stDownloadButton > button:hover {
         background: linear-gradient(135deg, #115e59 0%, #0f766e 100%) !important;
@@ -405,37 +424,86 @@ st.markdown("""
         transform: translateY(-2px) !important;
     }
 
-    /* Media Queries for Mobile and Tablet Responsiveness */
+    /* ===================================== */
+    /* RESPONSIVE MEDIA QUERIES (MOBILE/TABLET) */
+    /* ===================================== */
     @media (max-width: 768px) {
+        /* Force Streamlit Columns to Stack Vertically on Mobile */
+        [data-testid="stHorizontalBlock"] {
+            flex-direction: column !important;
+            gap: 1.2rem !important;
+        }
+        [data-testid="column"] {
+            width: 100% !important;
+            flex: 1 1 100% !important;
+            min-width: 100% !important;
+        }
         .main .block-container {
-            padding-left: 0.8rem;
-            padding-right: 0.8rem;
-            padding-top: 1rem;
+            padding-left: 0.6rem !important;
+            padding-right: 0.6rem !important;
+            padding-top: 0.8rem !important;
+            padding-bottom: 2rem !important;
         }
         .header-banner {
-            padding: 1.5rem 1rem;
-            margin-bottom: 1.2rem;
-            border-radius: 14px;
+            padding: 1.3rem 0.8rem !important;
+            margin-bottom: 1.2rem !important;
+            border-radius: 14px !important;
         }
         .header-banner h1 {
-            font-size: 1.6rem !important;
+            font-size: 1.45rem !important;
         }
         .header-banner p {
-            font-size: 0.95rem !important;
+            font-size: 0.88rem !important;
         }
-        div[data-testid="stRadio"] label {
-            padding: 8px 14px !important;
-            font-size: 0.85rem !important;
-        }
-        .metric-value {
-            font-size: 1.5rem;
-        }
-        .metric-item {
-            padding: 0.9rem 0.6rem;
+        .header-badge {
+            font-size: 0.72rem !important;
+            padding: 3px 10px !important;
         }
         .premium-card {
-            padding: 1.1rem;
-            border-radius: 14px;
+            padding: 1.1rem !important;
+            border-radius: 14px !important;
+            margin-bottom: 1.2rem !important;
+        }
+        .premium-card-title {
+            font-size: 1.05rem !important;
+        }
+        .feature-hero {
+            padding: 1.1rem !important;
+            border-radius: 14px !important;
+        }
+        .feature-hero-title {
+            font-size: 1.08rem !important;
+        }
+        .feature-hero-desc {
+            font-size: 0.88rem !important;
+        }
+    }
+
+    @media (max-width: 640px) {
+        /* Transform Top Navigation into a 2x2 Grid Menu Bar on Mobile Phones */
+        div[data-testid="stRadio"] > div {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 8px !important;
+            padding: 8px !important;
+            border-radius: 14px !important;
+        }
+        div[data-testid="stRadio"] label {
+            width: 100% !important;
+            text-align: center !important;
+            padding: 9px 6px !important;
+            font-size: 0.8rem !important;
+            justify-content: center !important;
+            border-radius: 10px !important;
+        }
+        .patient-metadata-grid {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0.8rem !important;
+            font-size: 0.85rem !important;
+        }
+        .premium-card img {
+            max-height: 280px !important;
         }
     }
 </style>
@@ -1215,7 +1283,7 @@ elif nav_option == "📥 Download Report":
         st.markdown(clean_html(f"""
         <div class="premium-card">
             <div class="premium-card-title">📋 Patient & Examination Metadata</div>
-            <div style="display: flex; flex-wrap: wrap; gap: 1.8rem; color: #f8fafc; font-size: 0.95rem;">
+            <div class="patient-metadata-grid">
                 <div><span style="color: #94a3b8;">Patient ID:</span> <strong>{patient_id_input}</strong></div>
                 <div><span style="color: #94a3b8;">Age:</span> <strong>{patient_age_input} yrs</strong></div>
                 <div><span style="color: #94a3b8;">Gender:</span> <strong>{patient_gender_input}</strong></div>
