@@ -83,7 +83,7 @@ st.set_page_config(
 )
 
 # =====================================
-# CUSTOM CSS STYLE - MODERN HEALTHCARE THEME (FULLY RESPONSIVE)
+# CUSTOM CSS STYLE - MODERN HEALTHCARE THEME (FULLY RESPONSIVE & MOBILE OPTIMIZED)
 # =====================================
 st.markdown("""
 <style>
@@ -121,15 +121,22 @@ st.markdown("""
     [data-testid="stSidebar"] .stMarkdown {
         font-size: 0.92rem;
     }
+
+    /* Animated Glowing Badge */
+    @keyframes pulseGlow {
+        0% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(20, 184, 166, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(20, 184, 166, 0); }
+    }
     
     /* Header Banner Container */
     .header-banner {
-        background: linear-gradient(135deg, #0d1e2e 0%, #0f2b38 50%, #0f3844 100%);
+        background: linear-gradient(135deg, #09131f 0%, #0d2232 50%, #0f3342 100%);
         padding: 2.2rem 2rem;
-        border-radius: 20px;
+        border-radius: 24px;
         margin-bottom: 1.8rem;
-        border: 1px solid rgba(20, 184, 166, 0.25);
-        box-shadow: 0 12px 35px -10px rgba(0, 0, 0, 0.5), 0 0 25px rgba(20, 184, 166, 0.08);
+        border: 1px solid rgba(20, 184, 166, 0.3);
+        box-shadow: 0 12px 35px -10px rgba(0, 0, 0, 0.6), 0 0 30px rgba(20, 184, 166, 0.1);
         text-align: center;
         position: relative;
         overflow: hidden;
@@ -141,37 +148,40 @@ st.markdown("""
         left: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle, rgba(20, 184, 166, 0.08) 0%, transparent 60%);
+        background: radial-gradient(circle, rgba(20, 184, 166, 0.12) 0%, transparent 60%);
         pointer-events: none;
     }
     .header-banner h1 {
         color: #ffffff !important;
         font-family: 'Outfit', sans-serif !important;
         font-weight: 700 !important;
-        font-size: 2.3rem !important;
+        font-size: clamp(1.4rem, 3.5vw, 2.3rem) !important;
         margin-bottom: 0.4rem !important;
         letter-spacing: -0.02em;
         line-height: 1.25 !important;
     }
     .header-banner p {
         color: #2dd4bf !important;
-        font-size: 1.1rem !important;
+        font-size: clamp(0.88rem, 2vw, 1.1rem) !important;
         font-weight: 400 !important;
         margin-bottom: 0 !important;
         line-height: 1.4 !important;
     }
     .header-badge {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
         background-color: rgba(20, 184, 166, 0.15);
         color: #14b8a6;
-        border: 1px solid rgba(20, 184, 166, 0.3);
-        padding: 4px 14px;
+        border: 1px solid rgba(20, 184, 166, 0.4);
+        padding: 5px 16px;
         border-radius: 50px;
         font-size: 0.8rem;
         font-weight: 600;
         letter-spacing: 0.05em;
         text-transform: uppercase;
         margin-bottom: 0.8rem;
+        animation: pulseGlow 2.5s infinite;
     }
 
     /* Top Navigation Radio Styling (Styled as modern Menu Bar) */
@@ -188,14 +198,14 @@ st.markdown("""
         gap: 10px !important;
         background-color: #131b2e;
         padding: 10px 14px;
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
     }
     div[data-testid="stRadio"] label {
         background-color: transparent !important;
         padding: 10px 20px !important;
-        border-radius: 12px !important;
+        border-radius: 14px !important;
         border: 1px solid transparent !important;
         color: #94a3b8 !important;
         font-weight: 600 !important;
@@ -205,17 +215,21 @@ st.markdown("""
         margin: 0 !important;
         text-align: center !important;
         white-space: nowrap !important;
+        min-height: 44px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
     div[data-testid="stRadio"] label:hover {
         color: #f8fafc !important;
-        background-color: rgba(255, 255, 255, 0.04) !important;
-        border-color: rgba(255, 255, 255, 0.1) !important;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
     }
     div[data-testid="stRadio"] label[data-checked="true"] {
-        background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%) !important;
+        background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%) !important;
         color: #ffffff !important;
         font-weight: 600 !important;
-        box-shadow: 0 4px 16px rgba(15, 118, 110, 0.45) !important;
+        box-shadow: 0 4px 18px rgba(13, 148, 136, 0.5) !important;
     }
     div[data-testid="stRadio"] label > div:first-child {
         display: none !important;
@@ -224,18 +238,18 @@ st.markdown("""
     /* Modern Glass Cards */
     .premium-card {
         background-color: #131b2e;
-        border: 1px solid rgba(255, 255, 255, 0.07);
-        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
         padding: 1.6rem;
-        box-shadow: 0 6px 20px -3px rgba(0, 0, 0, 0.25);
+        box-shadow: 0 8px 25px -4px rgba(0, 0, 0, 0.3);
         margin-bottom: 1.6rem;
         transition: all 0.25s ease-in-out;
         width: 100% !important;
         box-sizing: border-box !important;
     }
     .premium-card:hover {
-        border-color: rgba(20, 184, 166, 0.35);
-        box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.35), 0 0 15px rgba(20, 184, 166, 0.05);
+        border-color: rgba(20, 184, 166, 0.4);
+        box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4), 0 0 18px rgba(20, 184, 166, 0.08);
     }
     .premium-card-title {
         font-family: 'Outfit', sans-serif;
@@ -243,45 +257,79 @@ st.markdown("""
         font-weight: 600;
         color: #38bdf8;
         margin-bottom: 1.1rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         padding-bottom: 0.6rem;
         display: flex;
         align-items: center;
         gap: 8px;
     }
 
-    /* Responsive Table Container */
+    /* Responsive Table Container & Custom Scrollbars */
     .table-container {
         width: 100% !important;
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch !important;
         margin-bottom: 1.2rem;
-        border-radius: 12px;
+        border-radius: 14px;
     }
     .table-container table {
         min-width: 480px !important;
         width: 100% !important;
     }
+    .table-container::-webkit-scrollbar {
+        height: 6px;
+    }
+    .table-container::-webkit-scrollbar-track {
+        background: #0f172a;
+        border-radius: 6px;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+        background: #14b8a6;
+        border-radius: 6px;
+    }
+
+    /* Streamlit Buttons Custom Styling */
+    div.stButton > button {
+        width: 100% !important;
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        transition: all 0.2s ease !important;
+    }
+    div.stButton > button:active {
+        transform: scale(0.98) !important;
+    }
+
+    /* Streamlit File Uploader Custom Styling */
+    [data-testid="stFileUploader"] {
+        background-color: #111827 !important;
+        border: 1.5px dashed rgba(20, 184, 166, 0.4) !important;
+        border-radius: 18px !important;
+        padding: 1rem !important;
+        transition: border-color 0.25s ease !important;
+    }
+    [data-testid="stFileUploader"]:hover {
+        border-color: #14b8a6 !important;
+    }
 
     /* Diagnosis Alert Box Styling */
     .diagnosis-box {
         padding: 1.2rem 1.5rem;
-        border-radius: 14px;
+        border-radius: 16px;
         margin-bottom: 1.2rem;
         border-left: 6px solid;
     }
     .diagnosis-C1 {
-        background: rgba(16, 185, 129, 0.1);
+        background: rgba(16, 185, 129, 0.12);
         border-color: #10b981;
         color: #34d399;
     }
     .diagnosis-C2 {
-        background: rgba(245, 158, 11, 0.1);
+        background: rgba(245, 158, 11, 0.12);
         border-color: #f59e0b;
         color: #fbbf24;
     }
     .diagnosis-C3 {
-        background: rgba(239, 68, 68, 0.1);
+        background: rgba(239, 68, 68, 0.12);
         border-color: #ef4444;
         color: #f87171;
     }
@@ -290,10 +338,10 @@ st.markdown("""
     .feature-hero {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         padding: 1.5rem 1.8rem;
-        border-radius: 16px;
+        border-radius: 18px;
         border-left: 5px solid #14b8a6;
         margin-bottom: 1.8rem;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
     }
     .feature-hero-title {
         font-family: 'Outfit', sans-serif;
@@ -315,23 +363,23 @@ st.markdown("""
         gap: 1.2rem;
         background-color: #0f172a;
         padding: 1.2rem;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
         margin-bottom: 1.2rem;
     }
     
     /* Protocol Guide Card */
     .protocol-card {
         background-color: #131b2e;
-        border: 1px solid rgba(255, 255, 255, 0.07);
-        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 18px;
         padding: 1.4rem;
         height: 100%;
         transition: transform 0.2s ease;
     }
     .protocol-card:hover {
         transform: translateY(-3px);
-        border-color: rgba(20, 184, 166, 0.3);
+        border-color: rgba(20, 184, 166, 0.35);
     }
     .protocol-title {
         font-family: 'Outfit', sans-serif;
@@ -355,7 +403,7 @@ st.markdown("""
         padding: 2rem 0 1rem 0;
         color: #64748b;
         font-size: 0.85rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
         margin-top: 3rem;
     }
     .heart-icon {
@@ -375,12 +423,6 @@ st.markdown("""
         .header-banner {
             padding: 1.6rem 1.2rem !important;
         }
-        .header-banner h1 {
-            font-size: 1.8rem !important;
-        }
-        .header-banner p {
-            font-size: 0.98rem !important;
-        }
     }
 
     /* Mobile Devices & Small Tablets (max-width: 768px) */
@@ -392,39 +434,33 @@ st.markdown("""
             min-width: 100% !important;
         }
         .main .block-container {
-            padding-left: 0.75rem !important;
-            padding-right: 0.75rem !important;
-            padding-top: 1rem !important;
+            padding-left: 0.6rem !important;
+            padding-right: 0.6rem !important;
+            padding-top: 0.8rem !important;
         }
         .header-banner {
             padding: 1.4rem 1rem !important;
             margin-bottom: 1.2rem !important;
-            border-radius: 14px !important;
-        }
-        .header-banner h1 {
-            font-size: 1.45rem !important;
-        }
-        .header-banner p {
-            font-size: 0.88rem !important;
+            border-radius: 18px !important;
         }
         .header-badge {
             font-size: 0.72rem !important;
-            padding: 3px 10px !important;
+            padding: 4px 12px !important;
         }
         .premium-card {
-            padding: 1.1rem !important;
-            border-radius: 14px !important;
+            padding: 1.15rem 1rem !important;
+            border-radius: 16px !important;
             margin-bottom: 1.2rem !important;
         }
         .premium-card-title {
             font-size: 1.05rem !important;
         }
         .feature-hero {
-            padding: 1.1rem !important;
-            border-radius: 14px !important;
+            padding: 1.1rem 1rem !important;
+            border-radius: 16px !important;
         }
         .feature-hero-title {
-            font-size: 1.08rem !important;
+            font-size: 1.1rem !important;
         }
         .feature-hero-desc {
             font-size: 0.88rem !important;
@@ -435,6 +471,8 @@ st.markdown("""
         }
         .premium-card img {
             max-height: 280px !important;
+            width: 100% !important;
+            object-fit: contain !important;
         }
         
         /* Transform Top Navigation into a 2x2 Touch Grid Menu Bar */
@@ -443,22 +481,24 @@ st.markdown("""
             grid-template-columns: 1fr 1fr !important;
             gap: 8px !important;
             padding: 8px !important;
-            border-radius: 14px !important;
+            border-radius: 16px !important;
         }
         div[data-testid="stRadio"] label {
             width: 100% !important;
             text-align: center !important;
-            padding: 9px 4px !important;
-            font-size: 0.82rem !important;
+            padding: 10px 6px !important;
+            font-size: 0.83rem !important;
             justify-content: center !important;
-            border-radius: 10px !important;
+            border-radius: 12px !important;
             white-space: normal !important;
             word-break: break-word !important;
+            min-height: 48px !important;
         }
         .patient-metadata-grid {
             grid-template-columns: 1fr 1fr !important;
             gap: 0.8rem !important;
             font-size: 0.85rem !important;
+            padding: 0.9rem !important;
         }
     }
 
@@ -470,8 +510,8 @@ st.markdown("""
         .patient-metadata-grid {
             grid-template-columns: 1fr !important;
         }
-        .header-banner h1 {
-            font-size: 1.25rem !important;
+        .premium-card {
+            padding: 1rem 0.8rem !important;
         }
     }
 </style>
