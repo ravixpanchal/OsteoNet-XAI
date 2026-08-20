@@ -6,7 +6,7 @@
 [![TorchCAM](https://img.shields.io/badge/TorchCAM-Explainable%20AI-009688.svg)](https://github.com/frgousseau/torchcam)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-An advanced AI-driven medical image classification system for osteoporosis detection using female panoramic jaw radiograph (X-ray) images and multi-model deep transfer learning architectures (**ResNet18**, **ResNet50**, and **EfficientNet-B0**).
+An advanced AI-driven medical image classification system for osteoporosis detection using female panoramic jaw radiograph (X-ray) images and multi-model deep transfer learning architectures (**ResNet18**, **ResNet50**, **EfficientNet-B0**, and **DenseNet121**).
 
 The system classifies jaw radiograph images into three progressive clinical stages, runs real-time consensus predictions across multiple deep learning backbones, provides explainable visual heatmaps using **SmoothGrad-CAM++**, generates comparative metrics & ROC curves, and delivers a responsive, modern Streamlit diagnostic dashboard.
 
@@ -48,14 +48,17 @@ The system integrates multi-model deep learning and Explainable AI (XAI) to ensu
 
 ## 🚀 Core Features
 
-* **Multi-Model Architecture Support:** Fully implemented training, evaluation, and inference pipelines for 3 backbones:
+* **Multi-Model Architecture Support:** Fully implemented training, evaluation, and inference pipelines for backbones:
+  * **EfficientNet-B0:** State-of-the-art parameter-efficient architecture utilizing depthwise separable convolutions.
   * **ResNet18:** Lightweight and fast baseline architecture.
   * **ResNet50:** Deeper residual network with increased capacity for complex feature maps.
-  * **EfficientNet-B0:** State-of-the-art parameter-efficient architecture utilizing depthwise separable convolutions.
-* **Imbalanced Dataset Handling:** Incorporates medical-safe image augmentations and weighted cross-entropy loss to mitigate class imbalance biases (C1 vs C2 vs C3).
+  * **DenseNet121:** Densely connected convolutional network maximizing feature reuse.
+  * **F1-Weighted Soft-Voting Ensemble:** Dynamic multi-model probability consensus engine.
+* **Imbalanced Dataset Handling:** Combines `WeightedRandomSampler` and medical-safe image augmentations (contrast preservation, sharpness tuning, subtle rotations) to prevent majority-class bias.
+* **Two-Phase Transfer Learning:** Phase 1 classification head warmup followed by Phase 2 full backbone fine-tuning using differential learning rates ($LR_{backbone} = 3 \times 10^{-5}, LR_{head} = 3 \times 10^{-4}$) with Cosine Annealing learning rate scheduling.
 * **Professional Medical Report Generator:** Automatically generates structured, publication-quality medical reports featuring patient metadata, primary diagnosis, morphometric cortical observations, clinical action protocols, XAI Grad-CAM saliency heatmaps, multi-model consensus scores, and downloadable PDF report generation (`fpdf2`).
 * **Explainable AI (SmoothGrad-CAM++):** Visualizes feature importance over the mandibular cortical and trabecular regions using class activation mapping.
-* **Comprehensive Evaluation Toolkit:** Automated generation of confusion matrices, multi-class ROC/AUC curves, per-class metrics (Accuracy, F1-Score, Sensitivity), and training loss/accuracy history plots.
+* **Comprehensive Evaluation Toolkit:** Automated generation of confusion matrices, multi-class ROC/AUC curves, per-class metrics (Accuracy, F1-Score, Sensitivity, Precision), and training loss/accuracy history plots.
 * **Interactive Streamlit Dashboard:** Built with custom CSS styling using Google Outfit typography, teal-cyan gradients, glassmorphic containers, mobile responsiveness, dark mode design, and a dedicated Medical Report tab.
 
 ---
@@ -77,13 +80,13 @@ The system is trained and evaluated on female panoramic jaw X-ray images classif
 
 ## 📊 Model Performance & Benchmarks
 
-Evaluation metrics computed across the validation set (stored in [model_comparison.json](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/outputs/model_comparison.json)):
+Evaluation metrics computed across the test set (stored in [model_comparison.json](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/outputs/model_comparison.json)):
 
 | Model Architecture | Accuracy | F1-Score (Weighted) | Sensitivity (Recall) | Model File |
 | :--- | :--- | :--- | :--- | :--- |
-| **Ensemble Model ⭐ (Best Overall)** | **60.87%** | **0.629** | **60.87%** | Multi-Model Consensus |
-| **ResNet18** | **59.42%** | **0.611** | **59.42%** | [resnet18.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/resnet18.pth) |
-| **EfficientNet-B0** | **55.07%** | **0.566** | **55.07%** | [efficientnet_b0.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/efficientnet_b0.pth) |
+| **EfficientNet-B0 ⭐ (Best Model)** | **66.67%** | **0.677** | **66.67%** | [efficientnet_b0.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/efficientnet_b0.pth) |
+| **Ensemble Model** | **60.87%** | **0.624** | **60.87%** | Multi-Model Soft Voting |
+| **ResNet18** | **56.52%** | **0.579** | **56.52%** | [resnet18.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/resnet18.pth) |
 | **ResNet50** | **50.72%** | **0.533** | **50.72%** | [resnet50.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/resnet50.pth) |
 | **DenseNet121** | 49.28% | 0.519 | 49.28% | [densenet121.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/densenet121.pth) |
 
@@ -100,17 +103,18 @@ Medical_Project/
 ├── models/                         # Model checkpoint directory (.pth)
 │   ├── resnet18.pth
 │   ├── resnet50.pth
-│   └── efficientnet_b0.pth
+│   ├── efficientnet_b0.pth
+│   └── densenet121.pth
 ├── outputs/                        # Generated evaluation & XAI artifacts
 │   ├── confusion_matrix/           # Confusion matrix heatmaps per model
-│   ├── curves/                     # ROC curves and loss/accuracy plots
+│   ├── curves/                     # ROC curves, PR curves, loss/accuracy plots
 │   ├── gradcam/                    # Offline Grad-CAM saliency heatmaps
 │   └── model_comparison.json       # Benchmarking JSON report
 ├── src/                            # Core Python source code directory
 │   ├── __init__.py
 │   ├── config.py                   # Global hyperparameters & path configurations
 │   ├── dataset.py                  # PyTorch Dataset & DataLoader utilities
-│   ├── models.py                   # Model builders (ResNet18, ResNet50, EfficientNetB0)
+│   ├── models.py                   # Model builders (ResNet18, ResNet50, EfficientNetB0, DenseNet121)
 │   ├── utils.py                    # Helper utilities & logging handlers
 │   ├── train_resnet18.py           # Training script for ResNet18
 │   ├── train_resnet50.py           # Training script for ResNet50
@@ -152,15 +156,15 @@ Key Source File Links:
 
 1. **Clone the Repository:**
    ```bash
-   git clone <repository-url>
-   cd Medical_Project
+   git clone https://github.com/ravixpanchal/OsteoNet-XAI.git
+   cd OsteoNet-XAI
    ```
 
 2. **Create and Activate a Virtual Environment:**
    ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate   # On Linux/macOS
-   # .venv\Scripts\activate    # On Windows
+   python3 -m venv .medical
+   source .medical/bin/activate   # On Linux/macOS
+   # .medical\Scripts\activate   # On Windows
    ```
 
 3. **Install Dependencies:**
@@ -180,15 +184,15 @@ Train models individually:
 
 * **Train ResNet18:**
   ```bash
-  python src/train_resnet18.py
+  PYTHONPATH=. python src/train_resnet18.py
   ```
 * **Train ResNet50:**
   ```bash
-  python src/train_resnet50.py
+  PYTHONPATH=. python src/train_resnet50.py
   ```
 * **Train EfficientNet-B0:**
   ```bash
-  python src/train_efficientnet.py
+  PYTHONPATH=. python src/train_efficientnet.py
   ```
 
 Trained weights will be saved to `models/`.
@@ -197,16 +201,16 @@ Trained weights will be saved to `models/`.
 
 * **Evaluate Individual Models:**
   ```bash
-  python src/evaluate_resnet18.py
-  python src/evaluate_resnet50.py
-  python src/evaluate_efficientnet.py
+  PYTHONPATH=. python src/evaluate_resnet18.py
+  PYTHONPATH=. python src/evaluate_resnet50.py
+  PYTHONPATH=. python src/evaluate_efficientnet.py
   ```
 
 * **Run Comprehensive Multi-Model Benchmark:**
   ```bash
-  python src/evaluate_all.py
+  PYTHONPATH=. python src/evaluate_all.py
   ```
-  This script evaluates all models, computes confusion matrices, plots ROC curves, and outputs [model_comparison.json](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/outputs/model_comparison.json).
+  This script evaluates all models, computes confusion matrices, plots ROC/PR curves, and outputs [model_comparison.json](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/outputs/model_comparison.json).
 
 ### 3. CLI Single Prediction
 
@@ -214,15 +218,15 @@ Perform single-image inference via the command line:
 
 * **ResNet18 Prediction:**
   ```bash
-  python src/predict_resnet18.py
+  PYTHONPATH=. python src/predict_resnet18.py
   ```
 * **ResNet50 Prediction:**
   ```bash
-  python src/predict_resnet50.py
+  PYTHONPATH=. python src/predict_resnet50.py
   ```
 * **EfficientNet-B0 Prediction:**
   ```bash
-  python src/predict_efficientnet.py
+  PYTHONPATH=. python src/predict_efficientnet.py
   ```
 
 *Input Prompt:* Enter the relative or absolute path of an image when prompted.
@@ -231,15 +235,15 @@ Perform single-image inference via the command line:
 
 * **Generate Grad-CAM Saliency Map:**
   ```bash
-  python src/gradcam_resnet18.py
+  PYTHONPATH=. python src/gradcam_resnet18.py
   ```
 * **Generate ResNet18 ROC Curves:**
   ```bash
-  python src/roc_resnet18.py
+  PYTHONPATH=. python src/roc_resnet18.py
   ```
 * **Plot Accuracy/Loss Curves:**
   ```bash
-  python src/plot_curves.py
+  PYTHONPATH=. python src/plot_curves.py
   ```
 
 ---

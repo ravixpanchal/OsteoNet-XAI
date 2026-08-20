@@ -37,7 +37,7 @@ import torch.nn.functional as F
 # =====================================
 
 class FocalLoss(nn.Module):
-    def __init__(self, alpha=None, gamma=1.5, label_smoothing=0.08, reduction='mean'):
+    def __init__(self, alpha=None, gamma=1.0, label_smoothing=0.03, reduction='mean'):
         super(FocalLoss, self).__init__()
         self.alpha = alpha
         self.gamma = gamma
@@ -73,17 +73,13 @@ train_transform = transforms.Compose([
 
     transforms.RandomHorizontalFlip(p=0.5),
 
-    transforms.RandomRotation(12),
+    transforms.RandomRotation(10),
 
-    transforms.RandomAffine(degrees=0, translate=(0.05, 0.05), scale=(0.95, 1.05)),
+    transforms.RandomAffine(degrees=0, translate=(0.04, 0.04), scale=(0.96, 1.04)),
 
-    transforms.ColorJitter(brightness=0.2, contrast=0.2),
+    transforms.ColorJitter(brightness=0.15, contrast=0.15),
 
-    transforms.RandomAutocontrast(p=0.4),
-
-    transforms.RandomEqualize(p=0.3),
-
-    transforms.RandomAdjustSharpness(sharpness_factor=1.5, p=0.4),
+    transforms.RandomAdjustSharpness(sharpness_factor=1.3, p=0.3),
 
     transforms.ToTensor(),
 

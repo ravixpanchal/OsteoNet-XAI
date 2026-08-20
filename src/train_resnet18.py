@@ -29,7 +29,7 @@ device = get_device()
 model = get_resnet18_model()
 model = model.to(device)
 
-criterion = FocalLoss(alpha=class_weights_tensor.to(device), gamma=1.5, label_smoothing=0.05)
+criterion = FocalLoss(gamma=1.0, label_smoothing=0.03)
 
 # Freeze backbone initially (Phase 1)
 for name, param in model.named_parameters():
@@ -38,8 +38,8 @@ for name, param in model.named_parameters():
 
 optimizer = optim.AdamW(
     filter(lambda p: p.requires_grad, model.parameters()),
-    lr=5e-4,
-    weight_decay=1e-2
+    lr=4e-4,
+    weight_decay=1e-3
 )
 
 train_losses = []
@@ -62,9 +62,9 @@ for epoch in range(EPOCHS):
         head_params = [p for n, p in model.named_parameters() if "fc" in n]
 
         optimizer = optim.AdamW([
-            {'params': backbone_params, 'lr': 2e-5},
-            {'params': head_params, 'lr': 2e-4}
-        ], weight_decay=1e-2)
+            {'params': backbone_params, 'lr': 3e-5},
+            {'params': head_params, 'lr': 3e-4}
+        ], weight_decay=1e-3)
 
         scheduler = optim.lr_scheduler.CosineAnnealingLR(
             optimizer,
@@ -136,12 +136,12 @@ for epoch in range(EPOCHS):
     print(f"Train Loss: {train_loss:.4f} | Train Acc: {train_accuracy:.2f}%")
     print(f"Val Loss:   {val_loss:.4f} | Val Acc:   {val_accuracy:.2f}% | Val F1: {val_f1:.4f}")
 
-    if val_f1 > best_val_f1 or (val_f1 == best_val_f1 and val_accuracy > best_val_accuracy):
+    if val_accuracy > best_val_accuracy or (val_accuracy == best_val_accuracy and val_f1 > best_val_f1):
         best_val_f1 = val_f1
         best_val_accuracy = val_accuracy
         os.makedirs("models", exist_ok=True)
         torch.save(model.state_dict(), RESNET18_PATH)
-        print(f"✅ Best ResNet18 model saved! (Val F1: {val_f1:.4f}, Val Acc: {val_accuracy:.2f}%)")
+        print(f"✅ Best ResNet18 model saved! (Val Acc: {val_accuracy:.2f}%, Val F1: {val_f1:.4f})")
 
 print(f"\nResNet18 Training Finished! Best Validation F1: {best_val_f1:.4f}")
 
