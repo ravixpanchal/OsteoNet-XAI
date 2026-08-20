@@ -189,8 +189,24 @@ st.markdown("""
         margin-bottom: 1.8rem;
         width: 100% !important;
     }
-    div[data-testid="stRadio"] > label {
+    
+    /* COMPLETELY REMOVE & HIDE THE WIDGET HEADER "Navigation" LABEL */
+    div[data-testid="stRadio"] > label,
+    div[data-testid="stRadio"] [data-testid="stWidgetLabel"],
+    div[data-testid="stRadio"] label[data-testid="stWidgetLabel"] {
         display: none !important;
+        height: 0 !important;
+        max-height: 0 !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        overflow: hidden !important;
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
     }
     
     /* Radiogroup Grid Container */
@@ -206,23 +222,26 @@ st.markdown("""
         box-shadow: none !important;
     }
     
-    /* HIDE DEFAULT RADIO CIRCLE INPUT DOT COMPLETELY ACROSS ALL STREAMLIT DOM VARIATIONS */
-    div[data-testid="stRadio"] [role="radiogroup"] label > div:first-child,
-    div[data-testid="stRadio"] label > div:first-child,
-    div[data-baseweb="radio"] > div:first-child,
-    div[data-testid="stRadio"] input,
-    div[data-baseweb="radio"] input {
+    /* COMPLETELY REMOVE & HIDE THE RADIO CIRCLE INPUT DOTS ACROSS ALL STREAMLIT BASEWEB DOM VARIATIONS */
+    div[data-testid="stRadio"] label[data-baseweb="radio"] > div:first-child,
+    div[data-testid="stRadio"] label[data-baseweb="radio"] div:first-child,
+    div[data-testid="stRadio"] label[data-baseweb="radio"] span,
+    div[data-testid="stRadio"] label[data-baseweb="radio"] input,
+    div[data-baseweb="radio"] div:first-child,
+    div[data-baseweb="radio"] input,
+    div[data-baseweb="radio"] svg {
         display: none !important;
         width: 0 !important;
         height: 0 !important;
         opacity: 0 !important;
         visibility: hidden !important;
         margin: 0 !important;
+        padding: 0 !important;
     }
 
-    /* Individual Action Button Styling */
-    div[data-testid="stRadio"] label,
-    div[data-baseweb="radio"] {
+    /* Individual Action Button Styling (Target ONLY radio option labels) */
+    div[data-testid="stRadio"] label[data-baseweb="radio"],
+    div[data-testid="stRadio"] div[role="radiogroup"] label {
         width: 100% !important;
         background: #131b2e !important;
         border: 1px solid rgba(255, 255, 255, 0.12) !important;
@@ -244,8 +263,8 @@ st.markdown("""
     }
 
     /* Hover effect */
-    div[data-testid="stRadio"] label:hover,
-    div[data-baseweb="radio"]:hover {
+    div[data-testid="stRadio"] label[data-baseweb="radio"]:hover,
+    div[data-testid="stRadio"] div[role="radiogroup"] label:hover {
         color: #ffffff !important;
         background: #1e293b !important;
         border-color: rgba(20, 184, 166, 0.45) !important;
@@ -253,14 +272,16 @@ st.markdown("""
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
     }
 
-    /* Selected Active Button */
-    div[data-testid="stRadio"] label[data-checked="true"],
-    div[data-testid="stRadio"] label:has(input:checked) {
+    /* Selected Active Tab Button - ALWAYS HIGHLIGHTED */
+    div[data-testid="stRadio"] label[data-baseweb="radio"][aria-checked="true"],
+    div[data-testid="stRadio"] label[data-baseweb="radio"][data-checked="true"],
+    div[data-testid="stRadio"] label[data-baseweb="radio"]:has(input:checked),
+    div[data-testid="stRadio"] div[role="radiogroup"] label:has(input:checked) {
         background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%) !important;
         color: #ffffff !important;
         font-weight: 700 !important;
-        border: 1px solid #2dd4bf !important;
-        box-shadow: 0 6px 22px rgba(13, 148, 136, 0.55), 0 0 12px rgba(45, 212, 191, 0.3) !important;
+        border: 1.5px solid #2dd4bf !important;
+        box-shadow: 0 6px 22px rgba(13, 148, 136, 0.55), 0 0 14px rgba(45, 212, 191, 0.35) !important;
         transform: translateY(-2px) !important;
     }
 
