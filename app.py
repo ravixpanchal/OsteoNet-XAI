@@ -56,7 +56,9 @@ def get_image_base64(img_input):
             try:
                 with open(img_input, "rb") as f:
                     data = base64.b64encode(f.read()).decode("utf-8")
-                return f"data:image/png;base64,{data}"
+                ext = img_input.split(".")[-1].lower()
+                mime = "png" if ext == "png" else "jpeg"
+                return f"data:image/{mime};base64,{data}"
             except Exception:
                 return None
         return None
@@ -81,7 +83,7 @@ st.set_page_config(
 )
 
 # =====================================
-# CUSTOM CSS STYLE - MODERN HEALTHCARE THEME
+# CUSTOM CSS STYLE - MODERN HEALTHCARE THEME (FULLY RESPONSIVE)
 # =====================================
 st.markdown("""
 <style>
@@ -215,7 +217,6 @@ st.markdown("""
         font-weight: 600 !important;
         box-shadow: 0 4px 16px rgba(15, 118, 110, 0.45) !important;
     }
-    /* Hide default radio circle icon */
     div[data-testid="stRadio"] label > div:first-child {
         display: none !important;
     }
@@ -248,115 +249,83 @@ st.markdown("""
         align-items: center;
         gap: 8px;
     }
-    .premium-card img {
-        max-width: 100% !important;
-        height: auto !important;
-        object-fit: contain !important;
-        border-radius: 10px;
-    }
 
-    /* Feature Banner Card */
-    .feature-hero {
-        background: linear-gradient(135deg, rgba(15, 118, 110, 0.15) 0%, rgba(17, 24, 39, 0.4) 100%);
-        border: 1px solid rgba(20, 184, 166, 0.25);
-        border-radius: 16px;
-        padding: 1.4rem 1.6rem;
-        margin-bottom: 1.5rem;
+    /* Responsive Table Container */
+    .table-container {
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        margin-bottom: 1.2rem;
+        border-radius: 12px;
+    }
+    .table-container table {
+        min-width: 480px !important;
         width: 100% !important;
     }
+
+    /* Diagnosis Alert Box Styling */
+    .diagnosis-box {
+        padding: 1.2rem 1.5rem;
+        border-radius: 14px;
+        margin-bottom: 1.2rem;
+        border-left: 6px solid;
+    }
+    .diagnosis-C1 {
+        background: rgba(16, 185, 129, 0.1);
+        border-color: #10b981;
+        color: #34d399;
+    }
+    .diagnosis-C2 {
+        background: rgba(245, 158, 11, 0.1);
+        border-color: #f59e0b;
+        color: #fbbf24;
+    }
+    .diagnosis-C3 {
+        background: rgba(239, 68, 68, 0.1);
+        border-color: #ef4444;
+        color: #f87171;
+    }
+    
+    /* Clinical Feature Banner */
+    .feature-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 1.5rem 1.8rem;
+        border-radius: 16px;
+        border-left: 5px solid #14b8a6;
+        margin-bottom: 1.8rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
     .feature-hero-title {
-        color: #2dd4bf;
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.35rem;
         font-weight: 700;
-        font-size: 1.2rem;
+        color: #ffffff;
         margin-bottom: 0.4rem;
     }
     .feature-hero-desc {
-        color: #cbd5e1;
+        color: #94a3b8;
         font-size: 0.95rem;
         line-height: 1.5;
     }
     
-    /* Metrics Flex Grid */
-    .metric-grid {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-        margin-bottom: 1.5rem;
-    }
-    .metric-item {
-        flex: 1 1 180px;
-        background-color: #0f172a;
-        border: 1px solid rgba(255, 255, 255, 0.07);
-        border-radius: 14px;
-        padding: 1.25rem 1rem;
-        text-align: center;
-    }
-    .metric-value {
-        font-size: 1.9rem;
-        font-weight: 700;
-        color: #14b8a6;
-        margin-bottom: 0.2rem;
-    }
-    .metric-label {
-        font-size: 0.82rem;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        font-weight: 600;
-    }
-    
-    /* Diagnosis Status Boxes */
-    .diagnosis-box {
-        border-radius: 14px;
-        padding: 1.3rem 1.4rem;
-        margin-bottom: 1.4rem;
-        border-left: 6px solid;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    .diagnosis-C1 {
-        background-color: rgba(16, 185, 129, 0.1);
-        border-color: #10b981;
-        color: #a7f3d0;
-    }
-    .diagnosis-C2 {
-        background-color: rgba(245, 158, 11, 0.1);
-        border-color: #f59e0b;
-        color: #fde68a;
-    }
-    .diagnosis-C3 {
-        background-color: rgba(239, 68, 68, 0.1);
-        border-color: #ef4444;
-        color: #fca5a5;
-    }
-    
-    /* File Uploader styling */
-    [data-testid="stFileUploader"] {
-        padding: 1.2rem;
-        border-radius: 16px;
-        background-color: #131b2e;
-        border: 2px dashed rgba(20, 184, 166, 0.3);
-        transition: all 0.3s ease;
-    }
-    [data-testid="stFileUploader"]:hover {
-        border-color: rgba(20, 184, 166, 0.6);
-        background-color: rgba(15, 118, 110, 0.05);
-    }
-    
-    /* Patient Metadata Grid */
+    /* Metadata Grid */
     .patient-metadata-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1.2rem 1.8rem;
-        color: #f8fafc;
-        font-size: 0.95rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.2rem;
+        background-color: #0f172a;
+        padding: 1.2rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin-bottom: 1.2rem;
     }
-
-    /* Responsive Info Grid */
+    
+    /* Protocol Guide Card */
     .protocol-card {
         background-color: #131b2e;
+        border: 1px solid rgba(255, 255, 255, 0.07);
         border-radius: 16px;
         padding: 1.4rem;
-        border: 1px solid rgba(255, 255, 255, 0.07);
         height: 100%;
         transition: transform 0.2s ease;
     }
@@ -365,129 +334,70 @@ st.markdown("""
         border-color: rgba(20, 184, 166, 0.3);
     }
     .protocol-title {
-        font-size: 1.1rem;
+        font-family: 'Outfit', sans-serif;
         font-weight: 600;
-        margin-bottom: 0.6rem;
+        font-size: 1.1rem;
+        margin-bottom: 0.8rem;
         display: flex;
         align-items: center;
+        gap: 10px;
     }
     .protocol-dot {
-        display: inline-block;
-        width: 12px;
-        height: 12px;
+        width: 10px;
+        height: 10px;
         border-radius: 50%;
-        margin-right: 10px;
+        display: inline-block;
     }
-    
-    /* Custom Footer */
+
+    /* Footer */
     .custom-footer {
         text-align: center;
-        color: #94a3b8;
-        padding: 2.5rem 0 1rem 0;
-        border-top: 1px solid rgba(255, 255, 255, 0.07);
-        margin-top: 3.5rem;
-        font-size: 0.95rem;
-        background: linear-gradient(180deg, transparent, rgba(11, 15, 25, 0.8));
-        letter-spacing: 0.03em;
-    }
-    .custom-footer .author-link {
-        color: #14b8a6;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-    .custom-footer .author-link:hover {
-        color: #2dd4bf;
-        text-shadow: 0 0 10px rgba(45, 212, 191, 0.6);
+        padding: 2rem 0 1rem 0;
+        color: #64748b;
+        font-size: 0.85rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        margin-top: 3rem;
     }
     .heart-icon {
         color: #ef4444;
-        display: inline-block;
-        animation: heartbeat 1.5s infinite ease-in-out;
-        margin: 0 4px;
-        text-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
-    }
-    @keyframes heartbeat {
-        0% { transform: scale(1); }
-        30% { transform: scale(1.2); }
-        60% { transform: scale(0.9); }
-        100% { transform: scale(1); }
     }
 
-    /* Table Responsive Wrappers */
-    .table-container {
-        width: 100% !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        margin-top: 10px;
-        margin-bottom: 15px;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.07);
-    }
-    .table-container table {
-        width: 100% !important;
-        min-width: 480px;
-    }
-
-    /* Streamlit Download Button Customization */
-    .stDownloadButton > button {
-        background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%) !important;
-        color: #ffffff !important;
-        font-weight: 600 !important;
-        font-size: 1rem !important;
-        border: none !important;
-        padding: 0.85rem 1.5rem !important;
-        border-radius: 12px !important;
-        box-shadow: 0 4px 15px rgba(15, 118, 110, 0.35) !important;
-        transition: all 0.25s ease-in-out !important;
-        width: 100% !important;
-        min-height: 48px !important;
-    }
-    .stDownloadButton > button:hover {
-        background: linear-gradient(135deg, #115e59 0%, #0f766e 100%) !important;
-        box-shadow: 0 6px 20px rgba(15, 118, 110, 0.5) !important;
-        transform: translateY(-2px) !important;
-    }
-
-    /* ===================================== */
-    /* RESPONSIVE MEDIA QUERIES (BREAKPOINTS) */
-    /* ===================================== */
-    
-    /* Tablet & Medium Screens (< 1024px) */
-    @media (max-width: 1024px) {
+    /* ==================================================
+       RESPONSIVE MEDIA QUERIES
+       ================================================== */
+       
+    /* Laptops & Tablets (max-width: 992px) */
+    @media (max-width: 992px) {
         .main .block-container {
             padding-left: 1rem !important;
             padding-right: 1rem !important;
         }
-        .header-banner h1 {
-            font-size: 1.9rem !important;
+        .header-banner {
+            padding: 1.6rem 1.2rem !important;
         }
-        div[data-testid="stRadio"] label {
-            padding: 9px 16px !important;
-            font-size: 0.88rem !important;
+        .header-banner h1 {
+            font-size: 1.8rem !important;
+        }
+        .header-banner p {
+            font-size: 0.98rem !important;
         }
     }
 
-    /* Mobile Portrait & Tablets (< 768px) */
+    /* Mobile Devices & Small Tablets (max-width: 768px) */
     @media (max-width: 768px) {
-        /* Force Streamlit Columns to Stack Vertically */
-        [data-testid="stHorizontalBlock"] {
-            flex-direction: column !important;
-            gap: 1.2rem !important;
-        }
-        [data-testid="column"] {
+        /* Force Streamlit Columns to Stack Vertically on Mobile */
+        [data-testid="stColumn"] {
             width: 100% !important;
             flex: 1 1 100% !important;
             min-width: 100% !important;
         }
         .main .block-container {
-            padding-left: 0.6rem !important;
-            padding-right: 0.6rem !important;
-            padding-top: 0.8rem !important;
-            padding-bottom: 2rem !important;
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+            padding-top: 1rem !important;
         }
         .header-banner {
-            padding: 1.3rem 0.8rem !important;
+            padding: 1.4rem 1rem !important;
             margin-bottom: 1.2rem !important;
             border-radius: 14px !important;
         }
@@ -521,11 +431,12 @@ st.markdown("""
         }
         .protocol-card {
             height: auto !important;
+            margin-bottom: 1rem !important;
         }
-    }
-
-    /* Small Mobile Phones (< 640px) */
-    @media (max-width: 640px) {
+        .premium-card img {
+            max-height: 280px !important;
+        }
+        
         /* Transform Top Navigation into a 2x2 Touch Grid Menu Bar */
         div[data-testid="stRadio"] > div {
             display: grid !important;
@@ -538,31 +449,21 @@ st.markdown("""
             width: 100% !important;
             text-align: center !important;
             padding: 9px 4px !important;
-            font-size: 0.8rem !important;
+            font-size: 0.82rem !important;
             justify-content: center !important;
             border-radius: 10px !important;
             white-space: normal !important;
             word-break: break-word !important;
         }
         .patient-metadata-grid {
-            display: grid !important;
             grid-template-columns: 1fr 1fr !important;
             gap: 0.8rem !important;
             font-size: 0.85rem !important;
         }
-        .premium-card img {
-            max-height: 260px !important;
-        }
-        .metric-item {
-            padding: 0.8rem 0.5rem !important;
-        }
-        .metric-value {
-            font-size: 1.4rem !important;
-        }
     }
 
-    /* Ultra-small Screens (< 380px) */
-    @media (max-width: 380px) {
+    /* Ultra-small Mobile Screens (< 420px) */
+    @media (max-width: 420px) {
         div[data-testid="stRadio"] > div {
             grid-template-columns: 1fr !important;
         }
@@ -644,15 +545,15 @@ if os.path.exists(comparison_path):
             comparison_metrics = json.load(f)
     except Exception:
         comparison_metrics = {
-            "ResNet18": {"accuracy": 0.608, "f1_score": 0.629, "sensitivity": 0.608},
-            "ResNet50": {"accuracy": 0.492, "f1_score": 0.510, "sensitivity": 0.492},
-            "EfficientNetB0": {"accuracy": 0.608, "f1_score": 0.627, "sensitivity": 0.608}
+            "ResNet18": {"accuracy": 0.652, "f1_score": 0.651, "sensitivity": 0.652},
+            "ResNet50": {"accuracy": 0.623, "f1_score": 0.576, "sensitivity": 0.623},
+            "EfficientNetB0": {"accuracy": 0.696, "f1_score": 0.669, "sensitivity": 0.696}
         }
 else:
     comparison_metrics = {
-        "ResNet18": {"accuracy": 0.608, "f1_score": 0.629, "sensitivity": 0.608},
-        "ResNet50": {"accuracy": 0.492, "f1_score": 0.510, "sensitivity": 0.492},
-        "EfficientNetB0": {"accuracy": 0.608, "f1_score": 0.627, "sensitivity": 0.608}
+        "ResNet18": {"accuracy": 0.652, "f1_score": 0.651, "sensitivity": 0.652},
+        "ResNet50": {"accuracy": 0.623, "f1_score": 0.576, "sensitivity": 0.623},
+        "EfficientNetB0": {"accuracy": 0.696, "f1_score": 0.669, "sensitivity": 0.696}
     }
 
 # Find the best model based on accuracy
@@ -723,8 +624,8 @@ Evaluates female jawbone (mandibular) panoramic X-ray images (OPG) to detect ost
 st.sidebar.markdown("---")
 st.sidebar.markdown("### ⚙️ Engine Specs")
 st.sidebar.markdown(f"""
-- **Primary Model:** {best_model_name}
-- **Ensemble:** ResNet18, ResNet50, EfficientNetB0
+- **Primary Model:** `{best_model_name}`
+- **Active Ensemble:** {', '.join(models.keys()) if models else 'Default Baseline'}
 - **Input Resolution:** {IMAGE_SIZE}x{IMAGE_SIZE} px
 - **Hardware Acceleration:** `{device.type.upper()}`
 """)
@@ -757,67 +658,96 @@ if nav_option == "🔍 Jaw X-ray Predictor":
     </div>
     """, unsafe_allow_html=True)
     
+    # State check: If an image is already active in session state, show active radiograph control bar
+    has_active_image = 'image' in st.session_state and st.session_state['image'] is not None
+
+    if has_active_image:
+        active_filename = st.session_state.get('uploaded_file_name', 'Active Mandibular Radiograph')
+        col_active_info, col_reset = st.columns([3, 1], gap="small")
+        with col_active_info:
+            st.info(f"📁 **Active Radiograph**: `{active_filename}` — Analysis results persist across navigation tabs.")
+        with col_reset:
+            if st.button("🗑️ Clear / Upload New", use_container_width=True, type="secondary"):
+                for key in ['image', 'uploaded_file_name', 'predicted_class', 'ensemble_confidence', 'probabilities', 'predictions', 'gradcam_image']:
+                    if key in st.session_state:
+                        del st.session_state[key]
+                st.rerun()
+
+    # File Uploader
     uploaded_file = st.file_uploader(
         "Upload Mandibular Panoramic Radiograph (OPG)",
         type=["jpg", "jpeg", "png"],
-        label_visibility="collapsed"
+        label_visibility="collapsed",
+        key="panorex_file_uploader"
     )
     
-    if uploaded_file:
-        image = Image.open(uploaded_file).convert("RGB")
-        st.session_state['image'] = image
-        st.session_state['uploaded_file_name'] = uploaded_file.name
-        
-        # Inference pass across ensemble
-        input_tensor = transform(image).unsqueeze(0).to(device)
-        predictions = {}
-        ensemble_probs = torch.zeros(len(CLASS_NAMES)).to(device)
-        
-        with torch.no_grad():
-            for name, m in models.items():
-                m_outputs = m(input_tensor)
-                m_probs = torch.softmax(m_outputs, dim=1)[0]
-                m_idx = torch.argmax(m_probs).item()
-                predictions[name] = {
-                    "probs": m_probs,
-                    "class": CLASS_NAMES[m_idx],
-                    "class_idx": m_idx,
-                    "confidence": m_probs[m_idx].item()
-                }
-                ensemble_probs += m_probs
-        
-        ensemble_probs /= len(models)
-        ensemble_idx = torch.argmax(ensemble_probs).item()
-        ensemble_class = CLASS_NAMES[ensemble_idx]
-        ensemble_confidence = ensemble_probs[ensemble_idx].item()
-                
-        probabilities = ensemble_probs
-        predicted_class_idx = ensemble_idx
-        predicted_class = ensemble_class
-        
-        # Save results into session state for persistent access across pages
-        st.session_state['predicted_class'] = predicted_class
-        st.session_state['ensemble_confidence'] = ensemble_confidence
-        st.session_state['probabilities'] = probabilities
-        st.session_state['predictions'] = predictions
-        
-        # Grad-CAM extraction
-        try:
-            cam_extractor = SmoothGradCAMpp(model, target_layer=target_layer)
-            outputs = model(input_tensor)
-            activation_map = cam_extractor(predicted_class_idx, outputs)
-            cam = activation_map[0].squeeze(0)
-            gradcam_image = overlay_mask(image, to_pil_image(cam, mode="F"), alpha=0.55)
-            gradcam_error = None
-            if hasattr(cam_extractor, 'clear_hooks'):
-                cam_extractor.clear_hooks()
-            elif hasattr(cam_extractor, 'remove_hooks'):
-                cam_extractor.remove_hooks()
-        except Exception as cam_err:
-            gradcam_image = None
-            gradcam_error = cam_err
+    # Run prediction if a new file is uploaded
+    if uploaded_file is not None:
+        if st.session_state.get('uploaded_file_name') != uploaded_file.name:
+            image = Image.open(uploaded_file).convert("RGB")
+            st.session_state['image'] = image
+            st.session_state['uploaded_file_name'] = uploaded_file.name
             
-        st.session_state['gradcam_image'] = gradcam_image
+            # Inference pass across ensemble
+            input_tensor = transform(image).unsqueeze(0).to(device)
+            predictions = {}
+            ensemble_probs = torch.zeros(len(CLASS_NAMES)).to(device)
+            
+            with torch.no_grad():
+                for name, m in models.items():
+                    m_outputs = m(input_tensor)
+                    m_probs = torch.softmax(m_outputs, dim=1)[0]
+                    m_idx = torch.argmax(m_probs).item()
+                    predictions[name] = {
+                        "probs": m_probs,
+                        "class": CLASS_NAMES[m_idx],
+                        "class_idx": m_idx,
+                        "confidence": m_probs[m_idx].item()
+                    }
+                    ensemble_probs += m_probs
+            
+            ensemble_probs /= len(models)
+            ensemble_idx = torch.argmax(ensemble_probs).item()
+            ensemble_class = CLASS_NAMES[ensemble_idx]
+            ensemble_confidence = ensemble_probs[ensemble_idx].item()
+                    
+            probabilities = ensemble_probs
+            predicted_class_idx = ensemble_idx
+            predicted_class = ensemble_class
+            
+            # Save results into session state for persistent access across pages
+            st.session_state['predicted_class'] = predicted_class
+            st.session_state['ensemble_confidence'] = ensemble_confidence
+            st.session_state['probabilities'] = probabilities
+            st.session_state['predictions'] = predictions
+            
+            # Grad-CAM extraction
+            try:
+                cam_extractor = SmoothGradCAMpp(model, target_layer=target_layer)
+                outputs = model(input_tensor)
+                activation_map = cam_extractor(predicted_class_idx, outputs)
+                cam = activation_map[0].squeeze(0)
+                gradcam_image = overlay_mask(image, to_pil_image(cam, mode="F"), alpha=0.55)
+                gradcam_error = None
+                if hasattr(cam_extractor, 'clear_hooks'):
+                    cam_extractor.clear_hooks()
+                elif hasattr(cam_extractor, 'remove_hooks'):
+                    cam_extractor.remove_hooks()
+            except Exception as cam_err:
+                gradcam_image = None
+                gradcam_error = cam_err
+                
+            st.session_state['gradcam_image'] = gradcam_image
+            st.rerun()
+            
+    # Render persistent active prediction view
+    if 'image' in st.session_state and st.session_state['image'] is not None:
+        image = st.session_state['image']
+        predicted_class = st.session_state['predicted_class']
+        ensemble_confidence = st.session_state['ensemble_confidence']
+        probabilities = st.session_state['probabilities']
+        predictions = st.session_state['predictions']
+        gradcam_image = st.session_state.get('gradcam_image')
         
         # Grid layout for radiograph & diagnostic result
         col_img, col_pred = st.columns([1, 1], gap="large")
@@ -882,8 +812,7 @@ if nav_option == "🔍 Jaw X-ray Predictor":
                 """
             
             comparison_rows = ""
-            for name in ["ResNet18", "ResNet50", "EfficientNetB0"]:
-                pred_data = predictions[name]
+            for name, pred_data in predictions.items():
                 p_class = pred_data["class"]
                 p_conf = pred_data["confidence"] * 100
                 is_best = " ⭐ (Primary)" if name == best_model_name else ""
@@ -1042,8 +971,7 @@ elif nav_option == "📊 Model Insights & Performance":
     
     # Model comparison table
     comparison_rows_overall = ""
-    for name in ["ResNet18", "ResNet50", "EfficientNetB0"]:
-        metrics = comparison_metrics.get(name, {"accuracy": 0.0, "f1_score": 0.0, "sensitivity": 0.0})
+    for name, metrics in comparison_metrics.items():
         acc = metrics["accuracy"] * 100
         f1 = metrics["f1_score"]
         sens = metrics["sensitivity"] * 100
@@ -1081,13 +1009,18 @@ elif nav_option == "📊 Model Insights & Performance":
     """), unsafe_allow_html=True)
     
     st.markdown("### 🔍 Model Diagnostic & Performance Curves")
+    available_models_for_plots = [m for m in list(comparison_metrics.keys()) if os.path.exists(f"outputs/curves/{m.lower().replace(' ', '_').replace('(', '').replace(')', '')}_roc_curve.png")]
+    if not available_models_for_plots:
+        available_models_for_plots = list(comparison_metrics.keys())
+        
+    default_idx = available_models_for_plots.index(best_model_name) if best_model_name in available_models_for_plots else 0
     selected_model = st.selectbox(
         "Select an architecture to inspect visual performance plots:",
-        ["ResNet18", "ResNet50", "EfficientNetB0"],
-        index=["ResNet18", "ResNet50", "EfficientNetB0"].index(best_model_name)
+        available_models_for_plots,
+        index=default_idx
     )
     
-    model_key = selected_model.lower().replace(' ', '_')
+    model_key = selected_model.lower().replace(' ', '_').replace('(', '').replace(')', '')
     
     # --------------------------------------------------
     # ROW 1: CONFUSION MATRIX & ROC CURVES
@@ -1185,23 +1118,38 @@ elif nav_option == "📊 Model Insights & Performance":
             <ul>
                 <li><strong>Convergence:</strong> Steady training loss decline reaching 0.25 cross-entropy. Validation loss stabilizes near 0.84.</li>
                 <li><strong>Class Balance:</strong> Strong C3 (Osteoporosis) sensitivity (62% recall), successfully identifying high-risk cases despite small sample size.</li>
-                <li><strong>Overfitting Analysis:</strong> Slight generalization gap between training accuracy (87%) and validation accuracy (61%), controlled by weight decay regularization.</li>
+                <li><strong>Overfitting Analysis:</strong> Slight generalization gap controlled by weight decay regularization and dropout.</li>
             </ul>
             """
         elif selected_model == "ResNet50":
             diag_text = """
             <ul>
-                <li><strong>Convergence:</strong> Deeper architecture feature extraction. Validation loss settles around 1.10.</li>
-                <li><strong>Class Balance:</strong> Highest test set accuracy (67%) and superior precision on normal C1 radiographs (90%).</li>
-                <li><strong>Overfitting Analysis:</strong> Higher capacity leads to minor overfitting past epoch 20; compensated by weighted loss optimization.</li>
+                <li><strong>Convergence:</strong> Deeper architecture feature extraction with 62.32% overall test accuracy.</li>
+                <li><strong>Class Balance:</strong> Superior precision on normal C1 radiographs (88% recall).</li>
+                <li><strong>Overfitting Analysis:</strong> Regularized using AdamW and CosineAnnealingLR scheduling.</li>
+            </ul>
+            """
+        elif selected_model == "EfficientNetB0":
+            diag_text = """
+            <ul>
+                <li><strong>Convergence:</strong> Top performing individual architecture achieving 69.57% test accuracy and 0.669 weighted F1 score.</li>
+                <li><strong>Class Balance:</strong> Exceptional precision on C1 (75%) and C2 osteopenia (55%).</li>
+                <li><strong>Overfitting Analysis:</strong> Efficient compound scaling maintains optimal generalization stability.</li>
+            </ul>
+            """
+        elif selected_model == "DenseNet121":
+            diag_text = """
+            <ul>
+                <li><strong>Convergence:</strong> Dense connectivity allows maximum feature reuse, achieving peak 72.46% validation accuracy.</li>
+                <li><strong>Class Balance:</strong> High precision on C3 osteoporosis cases (75%).</li>
+                <li><strong>Overfitting Analysis:</strong> Specialized radiography backbone architecture.</li>
             </ul>
             """
         else:
             diag_text = """
             <ul>
-                <li><strong>Convergence:</strong> Efficient compound scaling allows fast loss reduction with minimal floating point operations.</li>
-                <li><strong>Class Balance:</strong> High macro-averaged F1 score (0.57) with 67% sensitivity on C2 (Osteopenia) and 62% on C3 (Osteoporosis).</li>
-                <li><strong>Overfitting Analysis:</strong> Balanced generalization curve across 30 epochs with robust class-weighted loss handling.</li>
+                <li><strong>Convergence:</strong> Soft-voting ensemble probability averaging across ResNet18, ResNet50, EfficientNetB0, and DenseNet121.</li>
+                <li><strong>Class Balance:</strong> Smoothed risk prediction bounds for clinical decision support.</li>
             </ul>
             """
 
