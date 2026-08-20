@@ -77,8 +77,14 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
     
-    /* Main Layout Base */
-    html, body, [class*="css"] {
+    /* Box Sizing & Fluid Reset */
+    *, *::before, *::after {
+        box-sizing: border-box !important;
+    }
+    
+    html, body {
+        overflow-x: hidden !important;
+        max-width: 100vw !important;
         font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
     }
     
@@ -86,6 +92,7 @@ st.markdown("""
         padding-top: 1.5rem;
         padding-bottom: 3rem;
         max-width: 1350px;
+        width: 100% !important;
     }
     
     /* Dark Theme Canvas */
@@ -132,12 +139,14 @@ st.markdown("""
         font-size: 2.3rem !important;
         margin-bottom: 0.4rem !important;
         letter-spacing: -0.02em;
+        line-height: 1.25 !important;
     }
     .header-banner p {
         color: #2dd4bf !important;
         font-size: 1.1rem !important;
         font-weight: 400 !important;
         margin-bottom: 0 !important;
+        line-height: 1.4 !important;
     }
     .header-badge {
         display: inline-block;
@@ -183,6 +192,7 @@ st.markdown("""
         transition: all 0.25s ease-in-out !important;
         margin: 0 !important;
         text-align: center !important;
+        white-space: nowrap !important;
     }
     div[data-testid="stRadio"] label:hover {
         color: #f8fafc !important;
@@ -209,6 +219,8 @@ st.markdown("""
         box-shadow: 0 6px 20px -3px rgba(0, 0, 0, 0.25);
         margin-bottom: 1.6rem;
         transition: all 0.25s ease-in-out;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
     .premium-card:hover {
         border-color: rgba(20, 184, 166, 0.35);
@@ -230,6 +242,7 @@ st.markdown("""
         max-width: 100% !important;
         height: auto !important;
         object-fit: contain !important;
+        border-radius: 10px;
     }
 
     /* Feature Banner Card */
@@ -239,6 +252,7 @@ st.markdown("""
         border-radius: 16px;
         padding: 1.4rem 1.6rem;
         margin-bottom: 1.5rem;
+        width: 100% !important;
     }
     .feature-hero-title {
         color: #2dd4bf;
@@ -401,6 +415,7 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.07);
     }
     .table-container table {
+        width: 100% !important;
         min-width: 480px;
     }
 
@@ -425,10 +440,27 @@ st.markdown("""
     }
 
     /* ===================================== */
-    /* RESPONSIVE MEDIA QUERIES (MOBILE/TABLET) */
+    /* RESPONSIVE MEDIA QUERIES (BREAKPOINTS) */
     /* ===================================== */
+    
+    /* Tablet & Medium Screens (< 1024px) */
+    @media (max-width: 1024px) {
+        .main .block-container {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+        .header-banner h1 {
+            font-size: 1.9rem !important;
+        }
+        div[data-testid="stRadio"] label {
+            padding: 9px 16px !important;
+            font-size: 0.88rem !important;
+        }
+    }
+
+    /* Mobile Portrait & Tablets (< 768px) */
     @media (max-width: 768px) {
-        /* Force Streamlit Columns to Stack Vertically on Mobile */
+        /* Force Streamlit Columns to Stack Vertically */
         [data-testid="stHorizontalBlock"] {
             flex-direction: column !important;
             gap: 1.2rem !important;
@@ -477,10 +509,14 @@ st.markdown("""
         .feature-hero-desc {
             font-size: 0.88rem !important;
         }
+        .protocol-card {
+            height: auto !important;
+        }
     }
 
+    /* Small Mobile Phones (< 640px) */
     @media (max-width: 640px) {
-        /* Transform Top Navigation into a 2x2 Grid Menu Bar on Mobile Phones */
+        /* Transform Top Navigation into a 2x2 Touch Grid Menu Bar */
         div[data-testid="stRadio"] > div {
             display: grid !important;
             grid-template-columns: 1fr 1fr !important;
@@ -491,10 +527,12 @@ st.markdown("""
         div[data-testid="stRadio"] label {
             width: 100% !important;
             text-align: center !important;
-            padding: 9px 6px !important;
+            padding: 9px 4px !important;
             font-size: 0.8rem !important;
             justify-content: center !important;
             border-radius: 10px !important;
+            white-space: normal !important;
+            word-break: break-word !important;
         }
         .patient-metadata-grid {
             display: grid !important;
@@ -503,7 +541,26 @@ st.markdown("""
             font-size: 0.85rem !important;
         }
         .premium-card img {
-            max-height: 280px !important;
+            max-height: 260px !important;
+        }
+        .metric-item {
+            padding: 0.8rem 0.5rem !important;
+        }
+        .metric-value {
+            font-size: 1.4rem !important;
+        }
+    }
+
+    /* Ultra-small Screens (< 380px) */
+    @media (max-width: 380px) {
+        div[data-testid="stRadio"] > div {
+            grid-template-columns: 1fr !important;
+        }
+        .patient-metadata-grid {
+            grid-template-columns: 1fr !important;
+        }
+        .header-banner h1 {
+            font-size: 1.25rem !important;
         }
     }
 </style>
@@ -1380,6 +1437,6 @@ elif nav_option == "📥 Download Report":
 # =====================================
 st.markdown("""
 <div class="custom-footer">
-    Osteoporosis AI Diagnostic System • Powered by PyTorch & TorchCAM • Designed with <span class="heart-icon">♥</span> for Healthcare Professionals
+    Designed with <span class="heart-icon">♥</span> for Healthcare Professionals
 </div>
 """, unsafe_allow_html=True)
