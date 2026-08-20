@@ -21,6 +21,7 @@ from src.config import (
     RESNET18_PATH,
     RESNET50_PATH,
     EFFICIENTNET_PATH,
+    DENSENET121_PATH,
     CONFUSION_MATRIX_PATH,
     CURVES_PATH
 )
@@ -31,6 +32,7 @@ from src.models import (
     get_resnet18_model,
     get_resnet50_model,
     get_efficientnet_b0_model,
+    get_densenet121_model,
     get_device
 )
 
@@ -61,30 +63,11 @@ def apply_dark_theme(fig, ax):
     ax.grid(True, linestyle='--', alpha=0.15, color='#ffffff')
 
 
-def evaluate_model(model, device, test_loader, model_name):
-    y_true = []
-    y_pred = []
-    y_scores = []
-    
-    with torch.no_grad():
-        for images, labels in test_loader:
-            images = images.to(device)
-            outputs = model(images)
-            probabilities = torch.softmax(outputs, dim=1)
-            _, predicted = torch.max(outputs, 1)
-            
-            y_true.extend(labels.numpy())
-            y_pred.extend(predicted.cpu().numpy())
-            y_scores.extend(probabilities.cpu().numpy())
-            
-    y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
-    y_scores = np.array(y_scores)
-    
+def generate_plots_and_metrics(y_true, y_pred, y_scores, model_name):
     precision, recall, f1, _ = precision_recall_fscore_support(y_true, y_pred, average='weighted')
     accuracy = (y_pred == y_true).mean()
     
-    model_key = model_name.lower().replace(' ', '_')
+    model_key = model_name.lower().replace(' ', '_').replace('(', '').replace(')', '')
     os.makedirs(CONFUSION_MATRIX_PATH, exist_ok=True)
     os.makedirs(CURVES_PATH, exist_ok=True)
     
@@ -173,7 +156,7 @@ def evaluate_model(model, device, test_loader, model_name):
     plt.close()
     
     # --------------------------------------------------
-    # 3. PRECISION-RECALL CURVE (Imbalanced Dataset Focus)
+    # 3. PRECISION-RECALL CURVE
     # --------------------------------------------------
     fig, ax = plt.subplots(figsize=(7, 5.5), dpi=200)
     apply_dark_theme(fig, ax)
@@ -188,7 +171,6 @@ def evaluate_model(model, device, test_loader, model_name):
             label=f"{class_labels[i]} (AP = {ap_score:.3f})"
         )
         
-    # Micro-average PR curve
     prec_micro, rec_micro, _ = precision_recall_curve(y_true_bin.ravel(), y_scores.ravel())
     ap_micro = average_precision_score(y_true_bin, y_scores, average="micro")
     ax.plot(
@@ -203,7 +185,7 @@ def evaluate_model(model, device, test_loader, model_name):
     ax.set_ylim([-0.02, 1.05])
     ax.set_xlabel("Recall (Sensitivity)", fontsize=11, fontweight='bold', labelpad=8)
     ax.set_ylabel("Precision (Positive Predictive Value)", fontsize=11, fontweight='bold', labelpad=8)
-    ax.set_title(f"{model_name} — Precision–Recall Curves (Imbalanced Evaluation)", pad=12)
+    ax.set_title(f"{model_name} — Precision–Recall Curves", pad=12)
     ax.legend(loc="lower left", facecolor=CANVAS_BG, edgecolor='#334155', labelcolor=TEXT_MAIN, fontsize=9.5)
     
     pr_save_path = os.path.join(CURVES_PATH, f"{model_key}_pr_curve.png")
@@ -221,6 +203,53 @@ def evaluate_model(model, device, test_loader, model_name):
     }
 
 
+def evaluate_model(model, device, test_loader, model_name):
+    y_true = []
+    y_pred = []
+    y_scores = []
+    
+    with torch.no_grad():
+        for images, labels in test_loader:
+            images = images.to(device)
+            outputs = model(images)
+            probabilities = torch.softmax(outputs, dim=1)
+            _, predicted = torch.max(outputs, 1)
+            
+            y_true.extend(labels.numpy())
+            y_pred.extend(predicted.cpu().numpy())
+            y_scores.extend(probabilities.cpu().numpy())
+            
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+    y_scores = np.array(y_scores)
+    
+    return generate_plots_and_metrics(y_true, y_pred, y_scores, model_name)
+
+
+def evaluate_ensemble(models, device, test_loader, model_name="Ensemble"):
+    y_true = []
+    y_scores = []
+    
+    with torch.no_grad():
+        for images, labels in test_loader:
+            images = images.to(device)
+            batch_probs = []
+            for model in models:
+                outputs = model(images)
+                probs = torch.softmax(outputs, dim=1)
+                batch_probs.append(probs.cpu().numpy())
+            
+            avg_probs = np.mean(batch_probs, axis=0)
+            y_scores.extend(avg_probs)
+            y_true.extend(labels.numpy())
+            
+    y_true = np.array(y_true)
+    y_scores = np.array(y_scores)
+    y_pred = np.argmax(y_scores, axis=1)
+    
+    return generate_plots_and_metrics(y_true, y_pred, y_scores, model_name)
+
+
 def plot_learning_curves(history_path, model_name):
     if not os.path.exists(history_path):
         print(f"History file {history_path} not found. Skipping learning curves plotting.")
@@ -235,21 +264,16 @@ def plot_learning_curves(history_path, model_name):
     val_accuracies = history["val_accuracies"]
     
     epochs = list(range(1, len(train_losses) + 1))
-    model_key = model_name.lower().replace(' ', '_')
+    model_key = model_name.lower().replace(' ', '_').replace('(', '').replace(')', '')
     
-    # --------------------------------------------------
-    # 4. TRAINING vs VALIDATION LOSS CURVE
-    # --------------------------------------------------
     fig, ax = plt.subplots(figsize=(7, 5.5), dpi=200)
     apply_dark_theme(fig, ax)
     
     ax.plot(epochs, train_losses, color=COLOR_TRAIN, linewidth=2.2, label='Training Loss')
     ax.plot(epochs, val_losses, color=COLOR_VAL, linewidth=2.2, linestyle='--', label='Validation Loss')
     
-    final_tr_l = train_losses[-1]
-    final_val_l = val_losses[-1]
-    ax.scatter([epochs[-1]], [final_tr_l], color=COLOR_TRAIN, s=40, zorder=5)
-    ax.scatter([epochs[-1]], [final_val_l], color=COLOR_VAL, s=40, zorder=5)
+    ax.scatter([epochs[-1]], [train_losses[-1]], color=COLOR_TRAIN, s=40, zorder=5)
+    ax.scatter([epochs[-1]], [val_losses[-1]], color=COLOR_VAL, s=40, zorder=5)
     
     ax.set_xlabel("Epoch", fontsize=11, fontweight='bold', labelpad=8)
     ax.set_ylabel("Cross-Entropy Loss", fontsize=11, fontweight='bold', labelpad=8)
@@ -261,19 +285,14 @@ def plot_learning_curves(history_path, model_name):
     plt.savefig(loss_save_path, facecolor=fig.get_facecolor(), edgecolor='none')
     plt.close()
     
-    # --------------------------------------------------
-    # 5. TRAINING vs VALIDATION ACCURACY CURVE
-    # --------------------------------------------------
     fig, ax = plt.subplots(figsize=(7, 5.5), dpi=200)
     apply_dark_theme(fig, ax)
     
     ax.plot(epochs, train_accuracies, color=COLOR_TRAIN, linewidth=2.2, label='Training Accuracy (%)')
     ax.plot(epochs, val_accuracies, color=COLOR_C1, linewidth=2.2, linestyle='--', label='Validation Accuracy (%)')
     
-    final_tr_a = train_accuracies[-1]
-    final_val_a = val_accuracies[-1]
-    ax.scatter([epochs[-1]], [final_tr_a], color=COLOR_TRAIN, s=40, zorder=5)
-    ax.scatter([epochs[-1]], [final_val_a], color=COLOR_C1, s=40, zorder=5)
+    ax.scatter([epochs[-1]], [train_accuracies[-1]], color=COLOR_TRAIN, s=40, zorder=5)
+    ax.scatter([epochs[-1]], [val_accuracies[-1]], color=COLOR_C1, s=40, zorder=5)
     
     ax.set_ylim([0, 105])
     ax.set_xlabel("Epoch", fontsize=11, fontweight='bold', labelpad=8)
@@ -286,12 +305,13 @@ def plot_learning_curves(history_path, model_name):
     plt.savefig(acc_save_path, facecolor=fig.get_facecolor(), edgecolor='none')
     plt.close()
     
-    print(f"Saved all 5 diagnostic curves for {model_name}!")
+    print(f"Saved diagnostic curves for {model_name}!")
 
 
 def main():
     device = get_device()
     comparison_data = {}
+    loaded_models = []
     
     # 1. ResNet18
     print("\n--- Evaluating ResNet18 ---")
@@ -303,6 +323,7 @@ def main():
         metrics_r18 = evaluate_model(r18, device, test_loader, "ResNet18")
         comparison_data["ResNet18"] = metrics_r18
         plot_learning_curves("outputs/resnet18_history.json", "ResNet18")
+        loaded_models.append(r18)
     except Exception as e:
         print(f"Error evaluating ResNet18: {e}")
         
@@ -316,6 +337,7 @@ def main():
         metrics_r50 = evaluate_model(r50, device, test_loader, "ResNet50")
         comparison_data["ResNet50"] = metrics_r50
         plot_learning_curves("outputs/resnet50_history.json", "ResNet50")
+        loaded_models.append(r50)
     except Exception as e:
         print(f"Error evaluating ResNet50: {e}")
         
@@ -329,8 +351,32 @@ def main():
         metrics_eff = evaluate_model(eff, device, test_loader, "EfficientNetB0")
         comparison_data["EfficientNetB0"] = metrics_eff
         plot_learning_curves("outputs/efficientnet_history.json", "EfficientNetB0")
+        loaded_models.append(eff)
     except Exception as e:
         print(f"Error evaluating EfficientNetB0: {e}")
+
+    # 4. DenseNet121
+    print("\n--- Evaluating DenseNet121 ---")
+    try:
+        dense = get_densenet121_model()
+        dense.load_state_dict(torch.load(DENSENET121_PATH, map_location=device))
+        dense = dense.to(device)
+        dense.eval()
+        metrics_dense = evaluate_model(dense, device, test_loader, "DenseNet121")
+        comparison_data["DenseNet121"] = metrics_dense
+        plot_learning_curves("outputs/densenet121_history.json", "DenseNet121")
+        loaded_models.append(dense)
+    except Exception as e:
+        print(f"Error evaluating DenseNet121: {e}")
+
+    # 5. Soft-Voting Ensemble
+    if len(loaded_models) > 1:
+        print("\n--- Evaluating Soft-Voting Ensemble ---")
+        try:
+            metrics_ensemble = evaluate_ensemble(loaded_models, device, test_loader, "Ensemble Model")
+            comparison_data["Ensemble Model"] = metrics_ensemble
+        except Exception as e:
+            print(f"Error evaluating Ensemble: {e}")
         
     # Save comparison metrics JSON
     with open("outputs/model_comparison.json", "w") as f:

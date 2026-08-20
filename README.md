@@ -79,11 +79,12 @@ The system is trained and evaluated on female panoramic jaw X-ray images classif
 
 Evaluation metrics computed across the validation set (stored in [model_comparison.json](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/outputs/model_comparison.json)):
 
-| Model Architecture | Accuracy | F1-Score (Macro) | Sensitivity (Recall) | Model File |
+| Model Architecture | Accuracy | F1-Score (Weighted) | Sensitivity (Recall) | Model File |
 | :--- | :--- | :--- | :--- | :--- |
-| **ResNet18** | **60.87%** | **62.94%** | **60.87%** | [resnet18.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/resnet18.pth) |
-| **EfficientNet-B0** | **60.87%** | **62.68%** | **60.87%** | [efficientnet_b0.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/efficientnet_b0.pth) |
-| **ResNet50** | 49.28% | 51.07% | 49.28% | [resnet50.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/resnet50.pth) |
+| **EfficientNet-B0 ⭐ (Best Model)** | **69.57%** | **0.669** | **69.57%** | [efficientnet_b0.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/efficientnet_b0.pth) |
+| **ResNet18** | **65.22%** | **0.651** | **65.22%** | [resnet18.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/resnet18.pth) |
+| **ResNet50** | **62.32%** | **0.576** | **62.32%** | [resnet50.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/resnet50.pth) |
+| **DenseNet121** | 59.42% | 0.564 | 59.42% | [densenet121.pth](file:///home/ravi/Desktop/Study%20Material/Projects/Personal/Medical_Project/models/densenet121.pth) |
 
 ---
 

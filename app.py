@@ -20,13 +20,15 @@ from src.config import (
     CLASS_NAMES,
     RESNET18_PATH,
     RESNET50_PATH,
-    EFFICIENTNET_PATH
+    EFFICIENTNET_PATH,
+    DENSENET121_PATH
 )
 
 from src.models import (
     get_resnet18_model,
     get_resnet50_model,
     get_efficientnet_b0_model,
+    get_densenet121_model,
     get_device
 )
 
@@ -573,34 +575,57 @@ st.markdown("""
 def load_all_models():
     device = get_device()
     
+    models = {}
+    
     # 1. ResNet18
-    r18 = get_resnet18_model()
-    r18.load_state_dict(torch.load(RESNET18_PATH, map_location=device))
-    r18 = r18.to(device)
-    r18.eval()
+    if os.path.exists(RESNET18_PATH):
+        try:
+            r18 = get_resnet18_model()
+            r18.load_state_dict(torch.load(RESNET18_PATH, map_location=device))
+            r18 = r18.to(device)
+            r18.eval()
+            models["ResNet18"] = r18
+        except Exception as e:
+            print("Error loading ResNet18:", e)
     
     # 2. ResNet50
-    r50 = get_resnet50_model()
-    r50.load_state_dict(torch.load(RESNET50_PATH, map_location=device))
-    r50 = r50.to(device)
-    r50.eval()
+    if os.path.exists(RESNET50_PATH):
+        try:
+            r50 = get_resnet50_model()
+            r50.load_state_dict(torch.load(RESNET50_PATH, map_location=device))
+            r50 = r50.to(device)
+            r50.eval()
+            models["ResNet50"] = r50
+        except Exception as e:
+            print("Error loading ResNet50:", e)
     
     # 3. EfficientNetB0
-    eff = get_efficientnet_b0_model()
-    eff.load_state_dict(torch.load(EFFICIENTNET_PATH, map_location=device))
-    eff = eff.to(device)
-    eff.eval()
+    if os.path.exists(EFFICIENTNET_PATH):
+        try:
+            eff = get_efficientnet_b0_model()
+            eff.load_state_dict(torch.load(EFFICIENTNET_PATH, map_location=device))
+            eff = eff.to(device)
+            eff.eval()
+            models["EfficientNetB0"] = eff
+        except Exception as e:
+            print("Error loading EfficientNetB0:", e)
+
+    # 4. DenseNet121
+    if os.path.exists(DENSENET121_PATH):
+        try:
+            dense = get_densenet121_model()
+            dense.load_state_dict(torch.load(DENSENET121_PATH, map_location=device))
+            dense = dense.to(device)
+            dense.eval()
+            models["DenseNet121"] = dense
+        except Exception as e:
+            print("Error loading DenseNet121:", e)
     
     # Enable gradients for all models (required for Grad-CAM backward propagation pass)
-    for m in [r18, r50, eff]:
+    for m in models.values():
         for param in m.parameters():
             param.requires_grad = True
             
-    models = {
-        "ResNet18": r18,
-        "ResNet50": r50,
-        "EfficientNetB0": eff
-    }
     return models, device
 
 # Load model comparison data
@@ -611,15 +636,15 @@ if os.path.exists(comparison_path):
             comparison_metrics = json.load(f)
     except Exception:
         comparison_metrics = {
-            "ResNet18": {"accuracy": 0.522, "f1_score": 0.490, "sensitivity": 0.522},
-            "ResNet50": {"accuracy": 0.667, "f1_score": 0.551, "sensitivity": 0.667},
-            "EfficientNetB0": {"accuracy": 0.522, "f1_score": 0.525, "sensitivity": 0.522}
+            "ResNet18": {"accuracy": 0.608, "f1_score": 0.629, "sensitivity": 0.608},
+            "ResNet50": {"accuracy": 0.492, "f1_score": 0.510, "sensitivity": 0.492},
+            "EfficientNetB0": {"accuracy": 0.608, "f1_score": 0.627, "sensitivity": 0.608}
         }
 else:
     comparison_metrics = {
-        "ResNet18": {"accuracy": 0.522, "f1_score": 0.490, "sensitivity": 0.522},
-        "ResNet50": {"accuracy": 0.667, "f1_score": 0.551, "sensitivity": 0.667},
-        "EfficientNetB0": {"accuracy": 0.522, "f1_score": 0.525, "sensitivity": 0.522}
+        "ResNet18": {"accuracy": 0.608, "f1_score": 0.629, "sensitivity": 0.608},
+        "ResNet50": {"accuracy": 0.492, "f1_score": 0.510, "sensitivity": 0.492},
+        "EfficientNetB0": {"accuracy": 0.608, "f1_score": 0.627, "sensitivity": 0.608}
     }
 
 # Find the best model based on accuracy
@@ -627,8 +652,9 @@ best_model_name = max(comparison_metrics.keys(), key=lambda k: comparison_metric
 
 try:
     models, device = load_all_models()
-    model = models[best_model_name]
-    target_layer = "features" if best_model_name == "EfficientNetB0" else "layer4"
+    gradcam_model_name = best_model_name if best_model_name in models else list(models.keys())[0]
+    model = models[gradcam_model_name]
+    target_layer = "features" if "EfficientNet" in gradcam_model_name or "DenseNet" in gradcam_model_name else "layer4"
     model_loaded = True
 except Exception as e:
     model_loaded = False

@@ -19,9 +19,13 @@ from src.config import *
 # SET RANDOM SEED
 # =====================================
 
+import torch
+
 random.seed(RANDOM_SEED)
 
 np.random.seed(RANDOM_SEED)
+
+torch.manual_seed(RANDOM_SEED)
 
 
 # =====================================
@@ -32,18 +36,11 @@ train_transform = transforms.Compose([
 
     transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
 
-    transforms.RandomRotation(10),
-
     transforms.RandomHorizontalFlip(),
 
-    transforms.RandomAffine(
-        degrees=5,
-        translate=(0.05, 0.05)
-    ),
+    transforms.RandomRotation(10),
 
-    transforms.ColorJitter(brightness=0.2, contrast=0.2),
-
-    transforms.RandomAutocontrast(p=0.5),
+    transforms.ColorJitter(brightness=0.15, contrast=0.15),
 
     transforms.ToTensor(),
 
@@ -179,30 +176,27 @@ train_sampler = WeightedRandomSampler(
 )
 
 train_loader = DataLoader(
-
     train_dataset,
-
     batch_size=BATCH_SIZE,
-
-    sampler=train_sampler
+    sampler=train_sampler,
+    num_workers=0,
+    pin_memory=True
 )
 
 
 val_loader = DataLoader(
-
     val_dataset,
-
     batch_size=BATCH_SIZE,
-
-    shuffle=False
+    shuffle=False,
+    num_workers=0,
+    pin_memory=True
 )
 
 
 test_loader = DataLoader(
-
     test_dataset,
-
     batch_size=BATCH_SIZE,
-
-    shuffle=False
+    shuffle=False,
+    num_workers=0,
+    pin_memory=True
 )

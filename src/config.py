@@ -17,16 +17,16 @@ NUM_CLASSES = len(CLASS_NAMES)
 # IMAGE CONFIGURATION
 # =====================================
 
-IMAGE_SIZE = 384
+IMAGE_SIZE = 224
 
 
 # =====================================
 # TRAINING CONFIGURATION
 # =====================================
 
-BATCH_SIZE = 8
-EPOCHS = 30
-LEARNING_RATE = 0.00001
+BATCH_SIZE = 16
+EPOCHS = 25
+LEARNING_RATE = 0.0001
 
 
 # =====================================
@@ -38,6 +38,8 @@ RESNET18_PATH = "models/resnet18.pth"
 RESNET50_PATH = "models/resnet50.pth"
 
 EFFICIENTNET_PATH = "models/efficientnet_b0.pth"
+
+DENSENET121_PATH = "models/densenet121.pth"
 
 
 # =====================================
